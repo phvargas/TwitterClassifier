@@ -30,21 +30,23 @@ def cluster(input_file, cluster1, cluster2):
                         try:
                             regex = re.search("(.*)(\s{1,}H\s{1,})(.*)", row)
                             print(regex.group(3), "---> Harassment", counter)
+                            ha_file.write(regex.group(3) + "\n")
                         except AttributeError as e:
                             try:
                                 regex = re.search("(.*)(\s{1,}N\s{1,})(.*)", row)
                                 print(regex.group(3), "---> No harassment", counter)
+                                non_ha_file.write(regex.group(3) + "\n")
                             except AttributeError as e:
                                 print(row)
 
                 except ValueError as e:
                     print(counter - 1, row, "-------------> EXCEPTION")
+                    ha_except_file.write(row + "\n")
 
-
-                """
-
-                """
-
+    # close all file-handles
+    ha_except_file.close()
+    non_ha_file.close()
+    ha_file.close()
     print(counter)
     return
 
