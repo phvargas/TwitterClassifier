@@ -14,9 +14,8 @@ __email__ = 'pvargas@cs.odu.edu'
 
 
 def cluster(input_file, cluster1, cluster2):
-    code_file = {'H': cluster1, 'N': cluster2}
     with open(input_file, "r", encoding='iso-8859-1') as f:
-        inventory = {'e': 0, 'h' : 0, 'n': 0, 'o' : 0}
+        inventory = {'e': 0, 'h': 0, 'n': 0, 'o': 0}
         ha_file = open(cluster1, 'w')
         non_ha_file = open(cluster2, 'w')
         ha_except_file = open('ha_exception.dat', 'w')
@@ -34,23 +33,23 @@ def cluster(input_file, cluster1, cluster2):
                     if isinstance(int(row[0]), int):
                         try:
                             # writes harassment tweets with CODE type 'H' into harassment file
-                            regex = re.search("(.*)(\s{1,}H\s{1,})(.*)", row)
+                            regex = re.search("(.*)(\s+H\s+)(.*)", row)
                             print(regex.group(3), "---> Harassment", counter)
                             inventory['h'] += 1
                             ha_file.write(regex.group(3) + "\n")
-                        except AttributeError as e:
+                        except AttributeError:
                             try:
                                 # writes non-harassment tweets with CODE type 'N' into non-harassment file
-                                regex = re.search("(.*)(\s{1,}N\s{1,})(.*)", row)
+                                regex = re.search("(.*)(\s+N\s+)(.*)", row)
                                 print(regex.group(3), "---> No harassment", counter)
                                 inventory['n'] += 1
                                 non_ha_file.write(regex.group(3) + "\n")
-                            except AttributeError as e:
+                            except AttributeError:
                                 print(row, "not classified, no exception")
                                 ha_except_file.write(row + "\n")
                                 inventory['o'] += 1
 
-                except ValueError as e:
+                except ValueError:
                     # writes exception tweets data into exception file
                     print(row, "-------------> EXCEPTION")
                     inventory['e'] += 1
