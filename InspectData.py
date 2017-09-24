@@ -76,7 +76,7 @@ if __name__ == '__main__':
             inspect_file(sys.argv[2], sys.argv[1])
     else:
         if not os.path.isfile(sys.argv[3]):
-            print('Could not find file: %s' % sys.argv[2])
+            print('Could not find file: %s' % sys.argv[3])
             print("Usage: python3 InspectData.py [head|tail] <filename>")
             sys.exit(-1)
 
