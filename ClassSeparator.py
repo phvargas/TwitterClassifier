@@ -26,13 +26,19 @@ def cluster(input_file, cluster1, cluster2):
                 row = row.strip()                                   # removes EOL character
 
                 try:
+                    """
+                    If ID in harassment corpus is numeric, then makes classification based on CODE type [H|N].
+                    Otherwise, it creates an entry in the exception harassment file
+                    """
                     if isinstance(int(row[0]), int):
                         try:
+                            # writes harassment tweets with CODE type 'H' into harassment file
                             regex = re.search("(.*)(\s{1,}H\s{1,})(.*)", row)
                             print(regex.group(3), "---> Harassment", counter)
                             ha_file.write(regex.group(3) + "\n")
                         except AttributeError as e:
                             try:
+                                # writes non-harassment tweets with CODE type 'N' into non-harassment file
                                 regex = re.search("(.*)(\s{1,}N\s{1,})(.*)", row)
                                 print(regex.group(3), "---> No harassment", counter)
                                 non_ha_file.write(regex.group(3) + "\n")
@@ -40,6 +46,7 @@ def cluster(input_file, cluster1, cluster2):
                                 print(row)
 
                 except ValueError as e:
+                    # writes exception tweets data into exception file
                     print(counter - 1, row, "-------------> EXCEPTION")
                     ha_except_file.write(row + "\n")
 
@@ -56,7 +63,7 @@ if __name__ == '__main__':
     print('Starting Time: %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
 
     if len(sys.argv) < 4:
-        print('Usage: python3 ClassSeparator.py <input_filename> <cluster1_filename> <cluster2_filename>')
+        print('Usage: python3 ClassSeparator.py <input_filename> <cluster1_h_filename> <cluster2_n_filename>')
         sys.exit(-1)
 
     elif not os.path.isfile(sys.argv[1]):
