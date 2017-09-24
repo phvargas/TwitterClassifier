@@ -58,7 +58,7 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     elif not os.path.isfile(sys.argv[1]):
-        print('Could not find file: %s', sys.argv[1])
+        print('Could not find file: %s' % sys.argv[1])
         sys.exit(-1)
 
     else:
