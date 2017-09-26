@@ -15,6 +15,7 @@ def classifier(filename):   #
 
     return
 
+
 if __name__ == '__main__':
     # checks for argument
     if len(sys.argv) != 2:
