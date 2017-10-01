@@ -68,9 +68,9 @@ def classifier(harassment_data_folder):   #
     cm = metrics.confusion_matrix(y_test, y_predicted)
     print(cm)
 
-    # import matplotlib.pyplot as plt
-    # plt.matshow(cm)
-    # plt.show()
+    import matplotlib.pyplot as plt
+    plt.matshow(cm)
+    plt.show()
 
     return
 
