@@ -1,4 +1,5 @@
 import sys
+import os
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.svm import LinearSVC
 from sklearn.pipeline import Pipeline
@@ -10,9 +11,8 @@ from time import strftime, localtime, time
 
 """Build a twitter harassment detector model
 
-   This code uses line obtained from scikit-learn tutorial, specifically exercise 02 of 
-   the tutorial.  The tutorial url:
-        http://scikit-learn.org/stable/tutorial/text_analytics/working_with_text_data.html
+   This code uses script obtained from scikit-learn tutorial, specifically exercise 02 of 
+   the tutorial.  Tutorial url: http://scikit-learn.org/stable/tutorial/text_analytics/working_with_text_data.html
         Author: Olivier Grisel <olivier.grisel@ensta.org>
         License: Simplified BSD        
 """
@@ -22,12 +22,19 @@ __date__ = 'Thu,  Sep 21, 2017 at 09:46:01'
 __email__ = 'pvargas@cs.odu.edu'
 
 
-def classifier(harassment_data_folder):   #
-    # the training data folder must be passed as first argument
+def classifier(harassment_data_folder):
+    """
+    :param harassment_data_folder: folder where dataset classification sub-folders reside
+    :return: void
+    """
+
+    print('\nLoading harassment dataset files....')
     dataset = load_files(harassment_data_folder, shuffle=False)
     print("n_samples: %d" % len(dataset.data))
 
     # Split the dataset in training and test set:
+    test_size = 0.5
+    print('Splitting dataset %f% test-size and %f\%')
     docs_train, docs_test, y_train, y_test = train_test_split(
         dataset.data, dataset.target, test_size=0.5)
 
@@ -76,7 +83,15 @@ def classifier(harassment_data_folder):   #
 
 
 if __name__ == '__main__':
-    # checks for argument
+    """
+    :param path: folder where dataset classification sub-folders reside
+
+    testing argument:
+    /home/hamar/scikit_learn_data/scikit-learn-master/doc/tutorial/text_analytics/data/movie_reviews/txt_sentoken/
+        
+    """
+
+    # checks if path was passed as an argument
     if len(sys.argv) != 2:
         print('Usage: python3 TClassifier.py <corpus_folder>')
         sys.exit(-1)
@@ -85,9 +100,14 @@ if __name__ == '__main__':
     start = time()
     print('Starting Time: %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
 
-    # call extract_tweets
-    crawled_pages = {}
-    classifier(sys.argv[1])
+    path = sys.argv[1]
+
+    if not os.path.isdir(path):
+        print('\nPath provided <<%s>> MUST be a folder.' % path)
+        print('Usage: python3 TClassifier.py <corpus_folder>')
+        sys.exit(-1)
+
+    classifier(path)
 
     print('\nEnd Time:  %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
     print('Execution Time: %.2f seconds' % (time()-start))
