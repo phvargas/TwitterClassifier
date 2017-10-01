@@ -25,25 +25,20 @@ def cluster(input_file, path):
             counter += 1
 
             regex = re.search("^<(\d+)>(.*)", row)
+            print(row.strip())
 
             if len(regex.groups()) != 2:                             # expecting ID and Tweet description
                 print('Something went wrong with tweet: %s' % row)
 
             else:
+                tweet_id = str(regex.group(1)).zfill(5)
+                tweet = regex.group(2).strip()
+                filename = path + "/" + 'tweet' + tweet_id + ".txt"
 
-                if isinstance(int(row[0]), int):
-                    try:
-                        # writes harassment tweets with CODE type 'H' into harassment file
-                        regex = re.search("(.*)(\s+H\s+)(.*)", row)
-                        print(regex.group(1).strip(), regex.group(3), "---> Harassment", counter)
-                    except AttributeError:
-                        try:
-                            # writes non-harassment tweets with CODE type 'N' into non-harassment file
-                            regex = re.search("(.*)(\s+N\s+)(.*)", row)
-                            print(regex.group(3), "---> No harassment", counter)
-                        except AttributeError:
-                            print(row, "not classified, no exception")
-
+                print(filename, tweet.strip())
+                output = open(filename, "w")
+                output.write(tweet)
+                output.close()
 
     print(counter)
     return
@@ -55,16 +50,21 @@ if __name__ == '__main__':
     print('Starting Time: %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
 
     if len(sys.argv) < 3:
-        print('Usage: python3 MakeTweetFile.py <input_filename> <dir_path>')
+        print('\nUsage: python3 MakeTweetFile.py <input_filename> <dir_path>')
         sys.exit(-1)
 
     elif not os.path.isfile(sys.argv[1]):
-        print('Could not find file: %s' % sys.argv[1])
+        print('\nCould not find file: %s' % sys.argv[1])
         print('Usage: python3 MakeTweetFile.py <input_filename> <dir_path>')
         sys.exit(-1)
 
     elif not os.path.isdir(sys.argv[2]):
-        print('Could not find folder: %s' % sys.argv[2])
+        print('\nCould not find folder: %s' % sys.argv[2])
+        print('Usage: python3 MakeTweetFile.py <input_filename> <dir_path>')
+        sys.exit(-1)
+
+    elif len(os.listdir(sys.argv[2])) != 0:
+        print('\nTarget folder << %s >> must be empty.' % sys.argv[2])
         print('Usage: python3 MakeTweetFile.py <input_filename> <dir_path>')
         sys.exit(-1)
 
