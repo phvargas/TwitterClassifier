@@ -34,16 +34,16 @@ def cluster(input_file, cluster1, cluster2):
                         try:
                             # writes harassment tweets with CODE type 'H' into harassment file
                             regex = re.search("(.*)(\s+H\s+)(.*)", row)
-                            print(regex.group(3), "---> Harassment", counter)
+                            print(regex.group(1).strip(), regex.group(3), "---> Harassment", counter)
                             inventory['h'] += 1
-                            ha_file.write(regex.group(3) + "\n")
+                            ha_file.write("<" + regex.group(1).strip() + ">" + regex.group(3) + "\n")
                         except AttributeError:
                             try:
                                 # writes non-harassment tweets with CODE type 'N' into non-harassment file
                                 regex = re.search("(.*)(\s+N\s+)(.*)", row)
                                 print(regex.group(3), "---> No harassment", counter)
                                 inventory['n'] += 1
-                                non_ha_file.write(regex.group(3) + "\n")
+                                non_ha_file.write("<" + regex.group(1).strip() + ">" + regex.group(3) + "\n")
                             except AttributeError:
                                 print(row, "not classified, no exception")
                                 ha_except_file.write(row + "\n")
@@ -65,6 +65,7 @@ def cluster(input_file, cluster1, cluster2):
     ha_file.close()
     print(counter)
     return
+
 
 if __name__ == '__main__':
     # record running time
