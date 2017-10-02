@@ -78,6 +78,7 @@ def classifier(harassment_data_folder):
         "@Lesdoggg I take the worst pics ever!! Thank God Beyoncé is just fucking beautiful!! Thanks for pic Queen B!! I was so nervous!!",
         "Replying to @Boobafett69 @Lesdoggg Tough woman! I bet the Trumpster wouldn't dis her. She would make him wet his diaper. Beautiful"
     ]
+
     """
     new_doc = []
     no_doc = 50
