@@ -33,10 +33,10 @@ def classifier(harassment_data_folder):
     print("n_samples: %d" % len(dataset.data))
 
     # Split the dataset in training and test set:
-    test_size = 0.5
-    print('Splitting dataset %f% test-size and %f\%')
+    test_size = 0.3
+    print('Splitting dataset %.2f%% test_size' % (100 * test_size))
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.5)
+        dataset.data, dataset.target, test_size=test_size)
 
     # TASK: Build a vectorizer / classifier pipeline that filters out tokens
     # that are too rare or too frequent
@@ -67,6 +67,19 @@ def classifier(harassment_data_folder):
     # named y_predicted
     y_predicted = grid_search.predict(docs_test)
 
+
+    new_doc = [
+        "@handle1 your cat is so pretty. Can I pass by your home an pet it?",
+        "@Lesdoggg I take the worst pics ever!! Thank God Beyoncé is just fucking beautiful!! Thanks for pic Queen B!! I was so nervous!!",
+        "Replying to @Boobafett69 @Lesdoggg Tough woman! I bet the Trumpster wouldn't dis her. She would make him wet his diaper. Beautiful"
+    ]
+
+    new_predicted = grid_search.predict(new_doc)
+    print(new_predicted)
+
+    for doc, category in zip(new_doc, new_predicted):
+        print('%r => %s' % (doc, dataset.target_names[category]))
+
     # Print the classification report
     print(metrics.classification_report(y_test, y_predicted,
                                         target_names=dataset.target_names))
@@ -75,9 +88,9 @@ def classifier(harassment_data_folder):
     cm = metrics.confusion_matrix(y_test, y_predicted)
     print(cm)
 
-    import matplotlib.pyplot as plt
-    plt.matshow(cm)
-    plt.show()
+    #import matplotlib.pyplot as plt
+    #plt.matshow(cm)
+    #plt.show()
 
     return
 
