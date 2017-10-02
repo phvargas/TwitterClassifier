@@ -1,7 +1,9 @@
 import sys
 import os
 from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.svm import LinearSVC
+from sklearn.linear_model import SGDClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
 from sklearn.datasets import load_files
@@ -33,7 +35,7 @@ def classifier(harassment_data_folder):
     print("n_samples: %d" % len(dataset.data))
 
     # Split the dataset in training and test set:
-    test_size = 0.3
+    test_size = 0.1
     print('Splitting dataset %.2f%% test_size' % (100 * test_size))
     docs_train, docs_test, y_train, y_test = train_test_split(
         dataset.data, dataset.target, test_size=test_size)
@@ -42,7 +44,10 @@ def classifier(harassment_data_folder):
     # that are too rare or too frequent
     pipeline = Pipeline([
         ('vect', TfidfVectorizer(min_df=3, max_df=0.95)),
-        ('clf', LinearSVC(C=1000)),
+        ('tfidf', TfidfTransformer()),
+        ('clf', SGDClassifier(loss='squared_loss', penalty='l2',
+                              alpha=1e-7, random_state=42,
+                              max_iter=5, tol=None)),
     ])
 
     # TASK: Build a grid search to find out whether unigrams or bigrams are
@@ -73,12 +78,24 @@ def classifier(harassment_data_folder):
         "@Lesdoggg I take the worst pics ever!! Thank God Beyoncé is just fucking beautiful!! Thanks for pic Queen B!! I was so nervous!!",
         "Replying to @Boobafett69 @Lesdoggg Tough woman! I bet the Trumpster wouldn't dis her. She would make him wet his diaper. Beautiful"
     ]
-
+    """
+    new_doc = []
+    no_doc = 50
+    for folder in os.listdir(path):
+        print(folder)
+        print(os.listdir(path + folder))
+        for tweet_file in os.listdir(path + folder)[:no_doc]:
+            tweet_fhs = open(path + folder + '/' + tweet_file, "r", encoding='iso-8859-1')
+            new_doc.append(tweet_fhs.read())
+            tweet_fhs.close()
+    """
     new_predicted = grid_search.predict(new_doc)
     print(new_predicted)
 
+    counter = 0
     for doc, category in zip(new_doc, new_predicted):
-        print('%r => %s' % (doc, dataset.target_names[category]))
+        counter += 1
+        print('<%d> %r => %s' % (counter, doc, dataset.target_names[category]))
 
     # Print the classification report
     print(metrics.classification_report(y_test, y_predicted,
