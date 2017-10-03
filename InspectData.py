@@ -45,6 +45,7 @@ def inspect_file(filename, action="head", lines=-1):
             print(stack[n])
     return
 
+
 if __name__ == '__main__':
     # record running time
     start = time()
