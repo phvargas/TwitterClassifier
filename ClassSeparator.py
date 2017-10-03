@@ -24,6 +24,7 @@ def cluster(input_file, cluster1, cluster2):
             counter += 1
             if counter > 1:                                         # does not write header
                 row = row.strip()                                   # removes EOL character
+                row = row.replace('"', '')
 
                 try:
                     """
