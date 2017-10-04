@@ -20,9 +20,15 @@ def strip_data(action, in_file, out_file):
             with open(out_file, "w") as f_out:
                 for line in f_in:
                     regex = re.findall("(@.*?)\s", line + " ")
+                    line = line.strip()
                     for value in regex:
-                        print('Replacing:', value, line.strip())
+                        print('Replacing:', value, line)
+                        line = line.replace(value, '')
+
                     counter += 1
+                    f_out.write(line.strip() + '\n')
+
+    print('Number of line: ', counter)
 
     return
 
@@ -38,12 +44,12 @@ if __name__ == '__main__':
 
     elif sys.argv[1].lower() != "tco" and sys.argv[1].lower() != "handle":
         print('\nOption MUST be Tco or handle')
-        print('Usage: python3 StripData.py <Tco|handle> <filename>')
+        print('Usage: python3 StripData.py <Tco|handle> <input_filename> <output_filename>')
         sys.exit(-1)
 
     elif not os.path.isfile(sys.argv[2]):
         print('Could not find input file: %s' % sys.argv[2])
-        print('Usage: python3 StripData.py <Tco|handle> <filename>')
+        print('Usage: python3 StripData.py <Tco|handle> <input_filename> <output_filename>')
         sys.exit(-1)
 
     strip_data(sys.argv[1].lower(), sys.argv[2], sys.argv[3])
