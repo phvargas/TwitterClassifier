@@ -10,6 +10,7 @@ from sklearn.datasets import load_files
 from sklearn.model_selection import train_test_split
 from sklearn import metrics
 from time import strftime, localtime, time
+from sklearn.datasets import fetch_20newsgroups
 
 """Build a twitter harassment detector model
 
@@ -32,6 +33,14 @@ def classifier(harassment_data_folder):
 
     print('\nLoading harassment dataset files....')
     dataset = load_files(harassment_data_folder, shuffle=False)
+
+    """
+    # test with 20_newsgroup
+    categories = ['alt.atheism', 'soc.religion.christian',
+                  'comp.graphics', 'sci.med']
+    dataset = fetch_20newsgroups(subset='train', categories=categories, shuffle=True, random_state=42)
+    """
+
     print("n_samples: %d" % len(dataset.data))
 
     # Split the dataset in training and test set:
@@ -43,9 +52,9 @@ def classifier(harassment_data_folder):
     # TASK: Build a vectorizer / classifier pipeline that filters out tokens
     # that are too rare or too frequent
     pipeline = Pipeline([
-        ('vect', TfidfVectorizer(min_df=3, max_df=0.95)),
+        ('vect', TfidfVectorizer()),
         ('tfidf', TfidfTransformer()),
-        ('clf', SGDClassifier(loss='squared_loss', penalty='l2',
+        ('clf', SGDClassifier(loss='hinge', penalty='l2',
                               alpha=1e-7, random_state=42,
                               max_iter=5, tol=None)),
     ])
@@ -72,7 +81,7 @@ def classifier(harassment_data_folder):
     # named y_predicted
     y_predicted = grid_search.predict(docs_test)
 
-
+    """
     new_doc = [
         "@handle1 your cat is so pretty. Can I pass by your home an pet it?",
         "@Lesdoggg I take the worst pics ever!! Thank God Beyoncé is just fucking beautiful!! Thanks for pic Queen B!! I was so nervous!!",
@@ -89,7 +98,7 @@ def classifier(harassment_data_folder):
             tweet_fhs = open(path + folder + '/' + tweet_file, "r", encoding='iso-8859-1')
             new_doc.append(tweet_fhs.read())
             tweet_fhs.close()
-    """
+
     new_predicted = grid_search.predict(new_doc)
     print(new_predicted)
 
@@ -122,14 +131,14 @@ if __name__ == '__main__':
         
     """
 
+    # record running time
+    start = time()
+    print('Starting Time: %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
+
     # checks if path was passed as an argument
     if len(sys.argv) != 2:
         print('Usage: python3 TClassifier.py <corpus_folder>')
         sys.exit(-1)
-
-    # record running time
-    start = time()
-    print('Starting Time: %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
 
     path = sys.argv[1]
 
