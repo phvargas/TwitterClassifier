@@ -1,5 +1,6 @@
 import sys
 import os
+import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.svm import LinearSVC
@@ -11,6 +12,10 @@ from sklearn.model_selection import train_test_split
 from sklearn import metrics
 from time import strftime, localtime, time
 from sklearn.datasets import fetch_20newsgroups
+from sklearn.model_selection import cross_val_score, cross_val_predict
+from sklearn.model_selection import KFold
+from scipy.stats import sem
+
 
 """Build a twitter harassment detector model
 
@@ -43,45 +48,52 @@ def classifier(harassment_data_folder):
 
     print("n_samples: %d" % len(dataset.data))
 
-    # Split the dataset in training and test set:
-    test_size = 0.1
-    print('Splitting dataset %.2f%% test_size' % (100 * test_size))
+    # split the dataset in training and test set to obtain metrics classification:
     docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=test_size)
+        dataset.data, dataset.target, test_size=0.1, random_state=None)
 
-    # TASK: Build a vectorizer / classifier pipeline that filters out tokens
-    # that are too rare or too frequent
+    # create k-fold cross validation
+    cv = KFold(10, shuffle=True, random_state=None)
+
+    # build a vectorizer / classifier pipeline that filters out tokens that are too rare or too frequent
     pipeline = Pipeline([
         ('vect', TfidfVectorizer()),
         ('tfidf', TfidfTransformer()),
         ('clf', SGDClassifier(loss='hinge', penalty='l2',
-                              alpha=1e-7, random_state=42,
+                              alpha=1e-5, random_state=42,
                               max_iter=5, tol=None)),
     ])
 
-    # TASK: Build a grid search to find out whether unigrams or bigrams are
-    # more useful.
-    # Fit the pipeline on the training set using grid search for the parameters
+    # make cross-fold validation using training data
+    scores = cross_val_score(pipeline, docs_train, y_train, cv=cv)
+    print('\nScores,', scores)
+
+    pipeline.fit(docs_train, y_train)
+
+    """
+    build a grid search to find out whether unigrams or bigrams are more useful.
+    Fit the pipeline on the training set using grid search for the parameters
+    """
+
     parameters = {
         'vect__ngram_range': [(1, 1), (1, 2)],
     }
     grid_search = GridSearchCV(pipeline, parameters, n_jobs=-1)
-    grid_search.fit(docs_train, y_train)
+    grid_search.fit(dataset.data, dataset.target)
 
-    # TASK: print the mean and std for each candidate along with the parameter
-    # settings for all the candidates explored by grid search.
+
+    """
+    print the mean and std for each candidate along with the parameter
+    settings for all the candidates explored by grid search.
+
     n_candidates = len(grid_search.cv_results_['params'])
+
     for i in range(n_candidates):
         print(i, 'params - %s; mean - %0.2f; std - %0.2f'
                  % (grid_search.cv_results_['params'][i],
                     grid_search.cv_results_['mean_test_score'][i],
                     grid_search.cv_results_['std_test_score'][i]))
 
-    # TASK: Predict the outcome on the testing set and store it in a variable
-    # named y_predicted
-    y_predicted = grid_search.predict(docs_test)
-
-    """
     new_doc = [
         "@handle1 your cat is so pretty. Can I pass by your home an pet it?",
         "@Lesdoggg I take the worst pics ever!! Thank God Beyoncé is just fucking beautiful!! Thanks for pic Queen B!! I was so nervous!!",
@@ -99,21 +111,30 @@ def classifier(harassment_data_folder):
             new_doc.append(tweet_fhs.read())
             tweet_fhs.close()
 
-    new_predicted = grid_search.predict(new_doc)
-    print(new_predicted)
+    predictions = cross_val_predict(pipeline, docs_test, y_test, cv=cv)
+
+    print("Mean score: {0:.3f} (+/-{1:.3f})".format(np.mean(scores), sem(scores)))
+    accuracy = metrics.r2_score(y_test, predictions)
+    print("accuracy ---> ", accuracy)
+
+    # predict the outcome on the testing set and store it in a variable named y_predicted
+    y_predicted = pipeline.predict(new_doc)
+
+    print()
+    print('Prediction index ===> ', y_predicted)
+    print()
 
     counter = 0
-    for doc, category in zip(new_doc, new_predicted):
+    for doc, category in zip(new_doc, y_predicted):
         counter += 1
         print('<%d> %r => %s' % (counter, doc, dataset.target_names[category]))
+
+    # predict the outcome on the testing set and store it in a variable named y_predicted
+    y_predicted = pipeline.predict(docs_test)
 
     # Print the classification report
     print(metrics.classification_report(y_test, y_predicted,
                                         target_names=dataset.target_names))
-
-    # Print and plot the confusion matrix
-    cm = metrics.confusion_matrix(y_test, y_predicted)
-    print(cm)
 
     #import matplotlib.pyplot as plt
     #plt.matshow(cm)
