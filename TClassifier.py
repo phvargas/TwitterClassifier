@@ -15,6 +15,7 @@ from sklearn.datasets import fetch_20newsgroups
 from sklearn.model_selection import cross_val_score, cross_val_predict
 from sklearn.model_selection import KFold
 from scipy.stats import sem
+from matplotlib import pyplot as plt
 
 
 """Build a twitter harassment detector model
@@ -59,7 +60,7 @@ def classifier(harassment_data_folder):
     pipeline = Pipeline([
         ('vect', TfidfVectorizer()),
         ('tfidf', TfidfTransformer()),
-        ('clf', SGDClassifier(loss='hinge', penalty='l2',
+        ('clf', SGDClassifier(loss='modified_huber', penalty='l2',
                               alpha=1e-5, random_state=42,
                               max_iter=5, tol=None)),
     ])
@@ -131,14 +132,55 @@ def classifier(harassment_data_folder):
 
     # predict the outcome on the testing set and store it in a variable named y_predicted
     y_predicted = pipeline.predict(docs_test)
+    y_prob = pipeline.predict_proba(docs_test)
+
+    print("Test sample size: ", len(docs_test))
+
+    red_dots = []
+    red_prob = []
+    blue_dots = []
+    blue_prob = []
+    for x in range(len(y_predicted)):
+        if y_predicted[x] != y_test[x]:
+            red_dots.append(x)
+            red_prob.append(y_prob[x][y_predicted[x]] * x)
+        else:
+            blue_dots.append(x)
+            blue_prob.append(y_prob[x][y_predicted[x]] * x)
+
+
+    print(y_prob)
 
     # Print the classification report
     print(metrics.classification_report(y_test, y_predicted,
                                         target_names=dataset.target_names))
 
+    print("red-dots length:", len(red_dots))
+
+    print("red-dost prob length", len(red_prob))
+
+    print("\nMispredicted:")
+    print(blue_dots)
+    print(blue_prob)
+
+    # get title from folder dataset name
+    title = harassment_data_folder.split('/')
+    if title[-1] == '':
+        title.pop()
+
+    title = title[-1] + " Prediction Probabilities"
+
+    # plot scatter plot
+    plt.scatter(blue_dots, blue_prob, label='true positive')
+    plt.scatter(red_dots, red_prob, color='red', label='true negative')
+    plt.title(title)
+    plt.xlabel("Tweet_index")
+    plt.ylabel("Pr(category | tweet) * tweet_index")
+    plt.legend()
+
     #import matplotlib.pyplot as plt
     #plt.matshow(cm)
-    #plt.show()
+    plt.show()
 
     return
 
