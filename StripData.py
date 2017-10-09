@@ -19,7 +19,21 @@ def strip_data(action, in_file, out_file):
         with open(in_file, "r", encoding='iso-8859-1') as f_in:
             with open(out_file, "w") as f_out:
                 for line in f_in:
+                    # regex to remove twitter handle
                     regex = re.findall("(@.*?)\s", line + " ")
+                    line = line.strip()
+                    for value in regex:
+                        print('Replacing:', value, line)
+                        line = line.replace(value, '')
+
+                    counter += 1
+                    f_out.write(line.strip() + '\n')
+    else:
+        with open(in_file, "r", encoding='iso-8859-1') as f_in:
+            with open(out_file, "w") as f_out:
+                for line in f_in:
+                    # regex to remove t.co
+                    regex = re.findall("htt.*:[\s+|\/][\s+|\/].*t.co.*\/\S+", line)
                     line = line.strip()
                     for value in regex:
                         print('Replacing:', value, line)
@@ -39,7 +53,7 @@ if __name__ == '__main__':
     print('Starting Time: %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
 
     if len(sys.argv) != 4:
-        print('Usage: python3 StripData.py <Tco|handle> <input_filename> <output_filename')
+        print('Usage: python3 StripData.py <Tco|handle> <input_filename> <output_filename>')
         sys.exit(-1)
 
     elif sys.argv[1].lower() != "tco" and sys.argv[1].lower() != "handle":
