@@ -37,6 +37,13 @@ def classifier(harassment_data_folder):
     :return: void
     """
 
+    # get title from folder dataset name
+    title = harassment_data_folder.split('/')
+    if title[-1] == '':
+        title.pop()
+
+    title = title[-1]
+
     print('\nLoading harassment dataset files....')
     dataset = load_files(harassment_data_folder, shuffle=False)
 
@@ -54,7 +61,8 @@ def classifier(harassment_data_folder):
         dataset.data, dataset.target, test_size=0.1, random_state=None)
 
     # create k-fold cross validation
-    cv = KFold(10, shuffle=True, random_state=None)
+    k_fold = 10
+    cv = KFold(k_fold, shuffle=True, random_state=None)
 
     # build a vectorizer / classifier pipeline that filters out tokens that are too rare or too frequent
     pipeline = Pipeline([
@@ -114,10 +122,6 @@ def classifier(harassment_data_folder):
 
     predictions = cross_val_predict(pipeline, docs_test, y_test, cv=cv)
 
-    print("Mean score: {0:.3f} (+/-{1:.3f})".format(np.mean(scores), sem(scores)))
-    accuracy = metrics.r2_score(y_test, predictions)
-    print("accuracy ---> ", accuracy)
-
     # predict the outcome on the testing set and store it in a variable named y_predicted
     y_predicted = pipeline.predict(new_doc)
 
@@ -134,8 +138,6 @@ def classifier(harassment_data_folder):
     y_predicted = pipeline.predict(docs_test)
     y_prob = pipeline.predict_proba(docs_test)
 
-    print("Test sample size: ", len(docs_test))
-
     red_dots = []
     red_prob = []
     blue_dots = []
@@ -148,32 +150,26 @@ def classifier(harassment_data_folder):
             blue_dots.append(x)
             blue_prob.append(y_prob[x][y_predicted[x]] * x)
 
-
-    print(y_prob)
-
     # Print the classification report
+    print()
     print(metrics.classification_report(y_test, y_predicted,
                                         target_names=dataset.target_names))
 
-    print("red-dots length:", len(red_dots))
+    print()
 
-    print("red-dost prob length", len(red_prob))
+    print("  {0}-fold cross validation mean score: {1:.3f} (+/-{2:.3f})".format(k_fold, np.mean(scores), sem(scores)))
+    accuracy = metrics.r2_score(y_test, predictions)
+    print("  R^2 score ---> ", accuracy)
 
-    print("\nMispredicted:")
-    print(blue_dots)
-    print(blue_prob)
-
-    # get title from folder dataset name
-    title = harassment_data_folder.split('/')
-    if title[-1] == '':
-        title.pop()
-
-    title = title[-1] + " Prediction Probabilities"
+    print()
+    print("  {0} dataset size: {1}".format(title, len(dataset.data)))
+    print("  test sample size: {0}".format(len(docs_test)))
+    print("  number of false positive: {0}  --->  {1:.0f}%".format(len(red_dots), len(red_dots)/len(docs_test) * 100))
 
     # plot scatter plot
     plt.scatter(blue_dots, blue_prob, label='true positive')
-    plt.scatter(red_dots, red_prob, color='red', label='true negative')
-    plt.title(title)
+    plt.scatter(red_dots, red_prob, color='red', label='false positive')
+    plt.title(title + " Predicted Category Probability")
     plt.xlabel("Tweet_index")
     plt.ylabel("Pr(category | tweet) * tweet_index")
     plt.legend()
