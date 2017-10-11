@@ -142,10 +142,13 @@ def classifier(harassment_data_folder):
     red_prob = []
     blue_dots = []
     blue_prob = []
+    counter = 0
     for x in range(len(y_predicted)):
         if y_predicted[x] != y_test[x]:
             red_dots.append(x)
             red_prob.append(y_prob[x][y_predicted[x]] * x)
+            counter += 1
+            print('<%d> %r => %s' % (counter, docs_test[x], dataset.target_names[y_predicted[x]]))
         else:
             blue_dots.append(x)
             blue_prob.append(y_prob[x][y_predicted[x]] * x)
@@ -164,11 +167,19 @@ def classifier(harassment_data_folder):
     print()
     print("  {0} dataset size: {1}".format(title, len(dataset.data)))
     print("  test sample size: {0}".format(len(docs_test)))
-    print("  number of false positive: {0}  --->  {1:.0f}%".format(len(red_dots), len(red_dots)/len(docs_test) * 100))
+    print("  number of false positive + false negative: {0}  --->  {1:.0f}%".format(len(red_dots), len(red_dots)/len(docs_test) * 100))
+
+    # Print and plot the confusion matrix
+    cm = metrics.confusion_matrix(y_test, y_predicted)
+
+    print(cm)
+    print()
+
+    display_conf_table(cm, dataset.target_names)
 
     # plot scatter plot
-    plt.scatter(blue_dots, blue_prob, label='true positive')
-    plt.scatter(red_dots, red_prob, color='red', label='false positive')
+    plt.scatter(blue_dots, blue_prob, label='true positive + true negative')
+    plt.scatter(red_dots, red_prob, color='red', label='false positive + false negative')
     plt.title(title + " Predicted Category Probability")
     plt.xlabel("Tweet_index")
     plt.ylabel("Pr(category | tweet) * tweet_index")
@@ -179,6 +190,26 @@ def classifier(harassment_data_folder):
     plt.show()
 
     return
+
+
+def display_conf_table(arr, categories):
+    row = arr.shape[0]
+    col = arr.shape[1]
+    print("Actual Class".rjust(56))
+
+    print(' ' * 35, end='')
+    for x in range(0, row):
+        print("  %s" % categories[x], end="")
+    print()
+
+    for x in range(0, row):
+        for y in range(0, col):
+            if y == 0:
+                predict_text = 'Predicted Cls ' + categories[x]
+                print(' {0:>30} => '.format(predict_text ), end='')
+
+            print('{0:12d}   '.format(arr[x, y]), end='')
+        print()
 
 
 if __name__ == '__main__':
