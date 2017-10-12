@@ -36,7 +36,7 @@ def classifier(harassment_data_folder):
     :param harassment_data_folder: folder where dataset classification sub-folders reside
     :return: void
     """
-
+    encoding = 'utf-8'
     # get title from folder dataset name
     title = harassment_data_folder.split('/')
     if title[-1] == '':
@@ -116,7 +116,7 @@ def classifier(harassment_data_folder):
         print(folder)
         print(os.listdir(path + folder))
         for tweet_file in os.listdir(path + folder)[:no_doc]:
-            tweet_fhs = open(path + folder + '/' + tweet_file, "r", encoding='iso-8859-1')
+            tweet_fhs = open(path + folder + '/' + tweet_file, "r", encoding=encoding)
             new_doc.append(tweet_fhs.read())
             tweet_fhs.close()
 
@@ -132,7 +132,7 @@ def classifier(harassment_data_folder):
     counter = 0
     for doc, category in zip(new_doc, y_predicted):
         counter += 1
-        print('<%d> %r => %s' % (counter, doc, dataset.target_names[category]))
+        print('<{0}> {1} => {2}'.format(counter, doc, dataset.target_names[category]))
 
     # predict the outcome on the testing set and store it in a variable named y_predicted
     y_predicted = pipeline.predict(docs_test)
@@ -148,7 +148,7 @@ def classifier(harassment_data_folder):
             red_dots.append(x)
             red_prob.append(y_prob[x][y_predicted[x]] * x)
             counter += 1
-            print('<%d> %r => %s' % (counter, docs_test[x], dataset.target_names[y_predicted[x]]))
+            print('<{0}> {1} => {2}'.format(counter, docs_test[x].decode(encoding), dataset.target_names[y_predicted[x]]))
         else:
             blue_dots.append(x)
             blue_prob.append(y_prob[x][y_predicted[x]] * x)
