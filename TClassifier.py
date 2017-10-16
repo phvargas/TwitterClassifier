@@ -187,7 +187,7 @@ def classifier(harassment_data_folder):
 
     #import matplotlib.pyplot as plt
     #plt.matshow(cm)
-    plt.show()
+    #plt.show()
 
     return
 
@@ -214,11 +214,7 @@ def display_conf_table(arr, categories):
 
 if __name__ == '__main__':
     """
-    :param path: folder where dataset classification sub-folders reside
-
-    testing argument:
-    /home/hamar/scikit_learn_data/scikit-learn-master/doc/tutorial/text_analytics/data/movie_reviews/txt_sentoken/
-        
+    :param path: folder where dataset classification sub-folders reside       
     """
 
     # record running time
