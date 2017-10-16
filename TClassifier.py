@@ -16,6 +16,7 @@ from sklearn.model_selection import cross_val_score, cross_val_predict
 from sklearn.model_selection import KFold
 from scipy.stats import sem
 from matplotlib import pyplot as plt
+from sklearn.externals import joblib
 
 
 """Build a twitter harassment detector model
@@ -169,6 +170,11 @@ def classifier(harassment_data_folder):
     print("  test sample size: {0}".format(len(docs_test)))
     print("  number of false positive + false negative: {0}  --->  {1:.0f}%".format(len(red_dots), len(red_dots)/len(docs_test) * 100))
 
+    print()
+    print('Writing persistence model...')
+    filename = 'models/' + title + '.pkl'
+    joblib.dump(pipeline, filename)
+
     # Print and plot the confusion matrix
     cm = metrics.confusion_matrix(y_test, y_predicted)
 
@@ -187,7 +193,7 @@ def classifier(harassment_data_folder):
 
     #import matplotlib.pyplot as plt
     #plt.matshow(cm)
-    #plt.show()
+    plt.show()
 
     return
 
