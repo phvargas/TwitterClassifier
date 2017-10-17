@@ -109,8 +109,8 @@ def classifier(harassment_data_folder):
         "@Lesdoggg I take the worst pics ever!! Thank God Beyoncé is just fucking beautiful!! Thanks for pic Queen B!! I was so nervous!!",
         "Replying to @Boobafett69 @Lesdoggg Tough woman! I bet the Trumpster wouldn't dis her. She would make him wet his diaper. Beautiful"
     ]
-
     """
+
     new_doc = []
     no_doc = 50
     for folder in os.listdir(path):
@@ -174,6 +174,10 @@ def classifier(harassment_data_folder):
     print('Writing persistence model...')
     filename = 'models/' + title + '.pkl'
     joblib.dump(pipeline, filename)
+
+    # preserve categories
+    filename = 'models/' + title + '_category.pkl'
+    joblib.dump(dataset.target_names, filename)
 
     # Print and plot the confusion matrix
     cm = metrics.confusion_matrix(y_test, y_predicted)

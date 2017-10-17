@@ -26,7 +26,7 @@ __date__ = 'Mon,  Oct 16, 2017 at 13:44:27'
 __email__ = 'pvargas@cs.odu.edu'
 
 
-def predict(model, doc):
+def predict(model, category_path, doc):
     """
     :param model: folder where dataset classification sub-folders reside
     :return: void
@@ -42,33 +42,21 @@ def predict(model, doc):
     # load model into pipeline object
     pipeline = joblib.load(model)
 
-    new_doc = []
-    no_doc = 50
-    for folder in os.listdir(path):
-        print(folder)
-        print(os.listdir(path + folder))
-        for tweet_file in os.listdir(path + folder)[:no_doc]:
-            tweet_fhs = open(path + folder + '/' + tweet_file, "r", encoding=encoding)
-            new_doc.append(tweet_fhs.read())
-            tweet_fhs.close()
+    # load category nomenclature into category object
+    category = joblib.load(category_path)
 
-    predictions = cross_val_predict(pipeline, docs_test, y_test, cv=cv)
+    new_doc = []
+    with open(doc, mode='r') as in_file:
+        for record in in_file:
+            new_doc.append(record)
 
     # predict the outcome on the testing set and store it in a variable named y_predicted
     y_predicted = pipeline.predict(new_doc)
 
-    print()
-    print('Prediction index ===> ', y_predicted)
-    print()
-
     counter = 0
-    for doc, category in zip(new_doc, y_predicted):
+    for doc, cat in zip(new_doc, y_predicted):
         counter += 1
-        print('<{0}> {1} => {2}'.format(counter, doc, dataset.target_names[category]))
-
-    # predict the outcome on the testing set and store it in a variable named y_predicted
-    y_predicted = pipeline.predict(docs_test)
-    y_prob = pipeline.predict_proba(docs_test)
+        print('<{0}> {1} => {2}'.format(counter, doc.strip(), category[cat]))
 
     return
 
@@ -76,6 +64,7 @@ def predict(model, doc):
 if __name__ == '__main__':
     """
     :param model_path: path and filename where model resides
+    :param cat_path: path and filename for category nomenclature
     :param doc: path and filename where document resides       
     """
 
@@ -84,24 +73,30 @@ if __name__ == '__main__':
     print('Starting Time: %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
 
     # checks if path was passed as an argument
-    if len(sys.argv) != 3:
-        print('Usage: python3 Predictor.py <model_path> <doc_path>')
+    if len(sys.argv) != 4:
+        print('Usage: python3 Predictor.py <model_path> <cat_path> <doc_path>')
         sys.exit(-1)
 
     path = sys.argv[1]
-    doc_path = sys.argv[2]
+    cat_path = sys.argv[2]
+    doc_path = sys.argv[3]
 
     if not os.path.isfile(path):
         print('\nCould not find model in file: ' % path)
-        print('Usage: python3 Predictor.py <model_path> <doc_path>')
+        print('Usage: python3 Predictor.py <model_path> <cat_path> <doc_path>')
+        sys.exit(-1)
+
+    if not os.path.isfile(path):
+        print('\nCould not find category file: ' % path)
+        print('Usage: python3 Predictor.py <model_path> <cat_path> <doc_path>')
         sys.exit(-1)
 
     if not os.path.isfile(doc_path):
         print('\nCould not find document: ' % doc_path)
-        print('Usage: python3 Predictor.py <model_path> <doc_path>')
+        print('Usage: python3 Predictor.py <model_path> <cat_path> <doc_path>')
         sys.exit(-1)
 
-    predict(path)
+    predict(path, cat_path, doc_path)
 
     print('\nEnd Time:  %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
     print('Execution Time: %.2f seconds' % (time()-start))
