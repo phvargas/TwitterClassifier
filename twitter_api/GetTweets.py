@@ -2,6 +2,7 @@ import sys
 import twitter
 from time import strftime, localtime, time
 from twitter_api.Keys import provide_keys
+import twitter_api.Subjects as research
 import time as timeit
 
 """
@@ -24,7 +25,6 @@ def tweets(handler):   # handler is twitter user name without @ example phone_du
                       access_token_secret=key['access_token_secret'])
 
     user = api.GetUser(screen_name=handler)
-    fhs = open("test.txt", "a")
 
     """
     Parameters used in GetHomeTimeline twitter API:
@@ -33,15 +33,45 @@ def tweets(handler):   # handler is twitter user name without @ example phone_du
        count: Specifies the number of statuses to retrieve. May not be greater than 200.
               Variable max_count is initialized to 200 to get max number of tweets allowed.
     """
-    current_id = '917942719061913601'
+
+    # file where retrieved tweets will reside
+    fhs = open("female_tweets.txt", "w")
+
+    handles = research.get_values(sex='female')
+    max_count = 200
+
+    counter = 1
+    for account in handles:
+        print(account['handle'])
+
+        try:
+            timeline_block = api.GetUserTimeline(screen_name=account['handle'],  count=max_count)
+            #timeline_block = api.GetHomeTimeline(count=max_count, max_id=max_id)
+
+            for my_tweets in timeline_block:
+                print(counter, my_tweets.text.replace("\n", ' '), my_tweets.created_at, my_tweets.id, len(timeline_block))
+                fhs.write('{0}{1}'.format(my_tweets.text.replace("\n", ' '), '\n'))
+                counter += 1
+
+            if not timeline_block:
+                print('There are no more tweets!!')
+                no_exception = False
+
+        except twitter.error.TwitterError as e:
+            print('We have to wait 15 mins.')
+            print(e)
+            timeit.sleep(61 * 15)
+
+    """
+    current_id = None
     max_count = 200
     counter = 1
     no_exception = True
     while no_exception:
         max_id = current_id
         try:
-            #timeline_block = api.GetUserTimeline(user_id=user.id,  count=max_count, max_id=max_id)
-            timeline_block = api.GetHomeTimeline(count=max_count, max_id=max_id)
+            timeline_block = api.GetUserTimeline(user_id=user.id,  count=max_count, max_id=max_id)
+            #timeline_block = api.GetHomeTimeline(count=max_count, max_id=max_id)
 
             for my_tweets in timeline_block:
                 if current_id != my_tweets.id:
@@ -58,9 +88,10 @@ def tweets(handler):   # handler is twitter user name without @ example phone_du
             print('We have to wait 15 mins.')
             print(e)
             timeit.sleep(61 * 15)
+    """
 
     fhs.close()
-    print(handler)
+    print(user)
 
     return
 
