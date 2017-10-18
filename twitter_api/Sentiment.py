@@ -1,5 +1,6 @@
 import re
 import sys
+import os
 import tweepy
 from tweepy import OAuthHandler
 from textblob import TextBlob
@@ -97,11 +98,39 @@ class TwitterClient(object):
             # print error (if any)
             print("Error : " + str(e))
 
+    def get_tweets_from_file(self, filename):
+        """
+        Main function to fetch tweets and parse them.
+        """
+        # empty list to store parsed tweets
+        tweets = []
+        if not os.path.isfile(filename):
+            print('Could not find file: ', filename)
+            return -1
+
+        with open(filename, mode='r', encoding='utf-8') as f:
+            # parsing tweets one by one
+            for tweet in f:
+                print(tweet.strip())
+                # empty dictionary to store required params of a tweet
+                parsed_tweet = {}
+
+                # saving text of tweet
+                parsed_tweet['text'] = tweet.strip()
+                # saving sentiment of tweet
+                parsed_tweet['sentiment'] = self.get_tweet_sentiment(tweet.strip())
+
+                tweets.append(parsed_tweet)
+
+            # return parsed tweets
+            return tweets
+
 
 def main():
     # creating object of TwitterClient Class
     api = TwitterClient()
 
+    """
     # calling function to get tweets
     try:
         tweets = api.get_tweets(query='Donald Trump', count=200)
@@ -109,29 +138,33 @@ def main():
     except tweepy.TweepError as e:
         # print error (if any)
         print("Error : " + str(e))
+    """
+    # calling function to get tweets
+    tweets = api.get_tweets_from_file('female_tweets.txt')
 
     # picking positive tweets from tweets
     ptweets = [tweet for tweet in tweets if tweet['sentiment'] == 'positive']
 
     # percentage of positive tweets
-    print("Positive tweets percentage: {} %".format(100 * len(ptweets) / len(tweets)))
+    positive_tweets = 100 * len(ptweets) / len(tweets)
+    print("Positive tweets percentage: {} %".format(positive_tweets))
 
     # picking negative tweets from tweets
     ntweets = [tweet for tweet in tweets if tweet['sentiment'] == 'negative']
 
     # percentage of negative tweets
-    print("Negative tweets percentage: {} %".format(100 * len(ntweets) / len(tweets)))
+    negative_tweets = 100 * len(ntweets) / len(tweets)
+    print("Negative tweets percentage: {} %".format(negative_tweets))
 
     # percentage of neutral tweets
-    print("Neutral tweets percentage: {} % \
-        ".format(100 * (len(tweets) - len(ntweets) - len(ptweets)) / len(tweets)))
+    print("Neutral tweets percentage: {} %".format(100 - positive_tweets - negative_tweets))
 
-    # printing first 5 positive tweets
+    # printing first 10 positive tweets
     print("\n\nPositive tweets:")
     for tweet in ptweets[:10]:
         print(tweet['text'])
 
-    # printing first 5 negative tweets
+    # printing first 10 negative tweets
     print("\n\nNegative tweets:")
     for tweet in ntweets[:10]:
         print(tweet['text'])
