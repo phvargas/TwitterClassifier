@@ -2,9 +2,12 @@ import re
 import sys
 import os
 import tweepy
+import json
 from tweepy import OAuthHandler
 from textblob import TextBlob
+from time import strftime, localtime, time
 from twitter_api.Keys import provide_keys
+import twitter_api.Subjects as research
 
 
 class TwitterClient(object):
@@ -122,11 +125,50 @@ class TwitterClient(object):
 
                 tweets.append(parsed_tweet)
 
+                    # return parsed tweets
+
+        return tweets
+
+    def get_tweets_from_json_file(self, filename, **kwargs):
+        """
+        Main function to fetch tweets and parse them.
+        """
+        # empty list to store parsed tweets
+        tweets = []
+        if not os.path.isfile(filename):
+            print('Could not find file: ', filename)
+            return -1
+
+        # get all handles from research subject
+        handles = []
+        for record in research.get_values(**kwargs):
+            handles.append(record['handle'])
+
+        with open(filename, mode='r', encoding='utf-8') as json_file:
+            data = json.load(json_file)
+
+            # parsing tweets one by one
+            for account in data:
+                print(account)
+                if account['handle'] in handles:
+                    for tweet in account['tweets']:
+                        print(tweet.strip())
+
+                        # empty dictionary to store required params of a tweet
+                        parsed_tweet = {}
+
+                        # saving text of tweet
+                        parsed_tweet['text'] = tweet.strip()
+                        # saving sentiment of tweet
+                        parsed_tweet['sentiment'] = self.get_tweet_sentiment(tweet.strip())
+
+                        tweets.append(parsed_tweet)
+
             # return parsed tweets
             return tweets
 
 
-def main():
+def main(filename, **kwargs):
     # creating object of TwitterClient Class
     api = TwitterClient()
 
@@ -140,24 +182,24 @@ def main():
         print("Error : " + str(e))
     """
     # calling function to get tweets
-    tweets = api.get_tweets_from_file('female_tweets.txt')
+    tweets = api.get_tweets_from_json_file(filename, **kwargs)
 
     # picking positive tweets from tweets
     ptweets = [tweet for tweet in tweets if tweet['sentiment'] == 'positive']
 
     # percentage of positive tweets
     positive_tweets = 100 * len(ptweets) / len(tweets)
-    print("Positive tweets percentage: {} %".format(positive_tweets))
+    print("Positive tweets percentage: {0} %  total: {1}".format(positive_tweets, len(ptweets)))
 
     # picking negative tweets from tweets
     ntweets = [tweet for tweet in tweets if tweet['sentiment'] == 'negative']
 
     # percentage of negative tweets
     negative_tweets = 100 * len(ntweets) / len(tweets)
-    print("Negative tweets percentage: {} %".format(negative_tweets))
+    print("Negative tweets percentage: {0} %   total: {1}".format(negative_tweets, len(ntweets)))
 
     # percentage of neutral tweets
-    print("Neutral tweets percentage: {} %".format(100 - positive_tweets - negative_tweets))
+    print("Neutral tweets percentage: {0} %   total: {1}".format(100 - positive_tweets - negative_tweets, len(tweets)))
 
     # printing first 10 positive tweets
     print("\n\nPositive tweets:")
@@ -172,4 +214,22 @@ def main():
 
 if __name__ == "__main__":
     # calling main function
-    main()
+    # checks for argument
+    if len(sys.argv) < 2:
+        print('Usage: python3 Sentiment.py <filename> <params>')
+        sys.exit(-1)
+
+    # record running time
+    start = time()
+    print('Starting Time: %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
+
+    param = {}
+    for value in sys.argv[2:]:
+        print(value)
+        param[value.split('=')[0]] = value.split('=')[1]
+
+    infile = sys.argv[1]
+    main(infile, **param)
+
+    print('\nEnd Time:  %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
+    print('Execution Time: %.2f seconds' % (time()-start))
