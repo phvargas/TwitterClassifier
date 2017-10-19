@@ -15,7 +15,7 @@ __date__ = 'Thu,  Sep 14, 2017 at 13:52:33'
 __email__ = 'pvargas@cs.odu.edu'
 
 
-def tweets(handler):   # handler is twitter user name without @ example phone_dude for @phone_dude
+def tweets(filename, **kwargs):   # handler is twitter user name without @ example phone_dude for @phone_dude
     # keys and tokens from the Twitter Dev Console
     key = provide_keys('males')
 
@@ -24,7 +24,6 @@ def tweets(handler):   # handler is twitter user name without @ example phone_du
                       access_token_key=key['access_token_key'],
                       access_token_secret=key['access_token_secret'])
 
-    user = api.GetUser(screen_name=handler)
 
     """
     Parameters used in GetHomeTimeline twitter API:
@@ -35,9 +34,9 @@ def tweets(handler):   # handler is twitter user name without @ example phone_du
     """
 
     # file where retrieved tweets will reside
-    fhs = open("female_tweets.txt", "w")
+    fhs = open(filename, "w")
 
-    handles = research.get_values(sex='female')
+    handles = research.get_values(**kwargs)
     max_count = 200
 
     counter = 1
@@ -46,7 +45,6 @@ def tweets(handler):   # handler is twitter user name without @ example phone_du
 
         try:
             timeline_block = api.GetUserTimeline(screen_name=account['handle'],  count=max_count)
-            #timeline_block = api.GetHomeTimeline(count=max_count, max_id=max_id)
 
             for my_tweets in timeline_block:
                 print(counter, my_tweets.text.replace("\n", ' '), my_tweets.created_at, my_tweets.id, len(timeline_block))
@@ -55,7 +53,6 @@ def tweets(handler):   # handler is twitter user name without @ example phone_du
 
             if not timeline_block:
                 print('There are no more tweets!!')
-                no_exception = False
 
         except twitter.error.TwitterError as e:
             print('We have to wait 15 mins.')
@@ -70,7 +67,6 @@ def tweets(handler):   # handler is twitter user name without @ example phone_du
     while no_exception:
         max_id = current_id
         try:
-            timeline_block = api.GetUserTimeline(user_id=user.id,  count=max_count, max_id=max_id)
             #timeline_block = api.GetHomeTimeline(count=max_count, max_id=max_id)
 
             for my_tweets in timeline_block:
@@ -91,24 +87,28 @@ def tweets(handler):   # handler is twitter user name without @ example phone_du
     """
 
     fhs.close()
-    print(user)
 
     return
 
 
 if __name__ == '__main__':
     # checks for argument
-    if len(sys.argv) != 2:
-        print('Usage: python3 GetTweets.py <twitter-handle>')
+    if len(sys.argv) < 2:
+        print('Usage: python3 GetTweets.py <filename> <params>')
         sys.exit(-1)
 
     # record running time
     start = time()
     print('Starting Time: %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
 
-    # call extract_tweets
-    crawled_pages = {}
-    tweets(sys.argv[1])
+    param = {}
+    for value in sys.argv[2:]:
+        print(value)
+        param[value.split('=')[0]] = value.split('=')[1]
+
+    outfile = sys.argv[1]
+
+    tweets(outfile, **param)
     print('\nEnd Time:  %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
     print('Execution Time: %.2f seconds' % (time()-start))
     sys.exit(0)
