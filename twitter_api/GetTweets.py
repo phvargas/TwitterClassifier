@@ -1,4 +1,5 @@
 import sys
+import json
 import twitter
 from time import strftime, localtime, time
 from twitter_api.Keys import provide_keys
@@ -24,7 +25,6 @@ def tweets(filename, **kwargs):   # handler is twitter user name without @ examp
                       access_token_key=key['access_token_key'],
                       access_token_secret=key['access_token_secret'])
 
-
     """
     Parameters used in GetHomeTimeline twitter API:
        max_id: initialized to 'None' - Returns results with an ID less than (that is, older than) or
@@ -36,8 +36,10 @@ def tweets(filename, **kwargs):   # handler is twitter user name without @ examp
     # file where retrieved tweets will reside
     fhs = open(filename, "w")
 
+    # get all handles from research subject
     handles = research.get_values(**kwargs)
     max_count = 200
+    data = []
 
     counter = 1
     for account in handles:
@@ -46,10 +48,13 @@ def tweets(filename, **kwargs):   # handler is twitter user name without @ examp
         try:
             timeline_block = api.GetUserTimeline(screen_name=account['handle'],  count=max_count)
 
+            json_obj = {'handle': account['handle'], 'tweets': []}
             for my_tweets in timeline_block:
                 print(counter, my_tweets.text.replace("\n", ' '), my_tweets.created_at, my_tweets.id, len(timeline_block))
-                fhs.write('{0}{1}'.format(my_tweets.text.replace("\n", ' '), '\n'))
+                json_obj['tweets'].append(my_tweets.text.replace("\n", ' '))
                 counter += 1
+
+            data.append(json_obj)
 
             if not timeline_block:
                 print('There are no more tweets!!')
@@ -86,7 +91,8 @@ def tweets(filename, **kwargs):   # handler is twitter user name without @ examp
             timeit.sleep(61 * 15)
     """
 
-    fhs.close()
+    with open(filename, 'w') as out_file:
+        json.dump(data, out_file, sort_keys=True, indent=4)
 
     return
 
@@ -109,6 +115,7 @@ if __name__ == '__main__':
     outfile = sys.argv[1]
 
     tweets(outfile, **param)
+
     print('\nEnd Time:  %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
     print('Execution Time: %.2f seconds' % (time()-start))
     sys.exit(0)
