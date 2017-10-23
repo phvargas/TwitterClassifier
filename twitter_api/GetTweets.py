@@ -33,68 +33,70 @@ def tweets(filename, **kwargs):   # handler is twitter user name without @ examp
               Variable max_count is initialized to 200 to get max number of tweets allowed.
     """
 
-    # file where retrieved tweets will reside
-    fhs = open(filename, "w")
-
     # get all handles from research subject
     handles = research.get_values(**kwargs)
-    max_count = 200
+    max_count = 3200
     data = []
 
-    counter = 1
+    counter = 0
     for account in handles:
         print(account['handle'])
 
-        try:
-            timeline_block = api.GetUserTimeline(screen_name=account['handle'],  count=max_count)
+        # make initial request for most recent tweets (200 is the maximum allowed count)
+        new_tweets = retrieve_tweets(api, account['handle'])
 
-            json_obj = {'handle': account['handle'], 'tweets': []}
-            for my_tweets in timeline_block:
-                print(counter, my_tweets.text.replace("\n", ' '), my_tweets.created_at, my_tweets.id, len(timeline_block))
-                json_obj['tweets'].append(my_tweets.text.replace("\n", ' '))
-                counter += 1
+        # create initial json_obj for given handle
+        json_obj = {'handle': account['handle'], 'tweets': []}
 
-            data.append(json_obj)
+        # add new tweets to created json_oj
+        add_tweet_to_handle(json_obj, new_tweets, counter)
+        counter += len(new_tweets)
 
-            if not timeline_block:
-                print('There are no more tweets!!')
+        # save the id of the oldest tweet less one
+        if len(new_tweets) > 0:
+            oldest = new_tweets[-1].id - 1
 
-        except twitter.error.TwitterError as e:
-            print('We have to wait 15 mins.')
-            print(e)
-            timeit.sleep(61 * 15)
+        # keep grabbing tweets until there are no tweets left to grab
+        while len(new_tweets) > 0:
+            # all subsequent requests use the max_id param to prevent duplicates
+            new_tweets = retrieve_tweets(api, account['handle'], max_count,  oldest)
 
-    """
-    current_id = None
-    max_count = 200
-    counter = 1
-    no_exception = True
-    while no_exception:
-        max_id = current_id
-        try:
-            #timeline_block = api.GetHomeTimeline(count=max_count, max_id=max_id)
+            add_tweet_to_handle(json_obj, new_tweets, counter)
+            counter += len(new_tweets)
 
-            for my_tweets in timeline_block:
-                if current_id != my_tweets.id:
-                    current_id = my_tweets.id
-                    print(counter, my_tweets.text.replace("\n", ' '), my_tweets.created_at, my_tweets.id, len(timeline_block))
-                    fhs.write('{0}{1}'.format(my_tweets.text.replace("\n", ' '), '\n'))
-                    counter += 1
+            # update the id of the oldest tweet less one
+            if len(new_tweets) > 0:
+                oldest = new_tweets[-1].id - 1
 
-            if not timeline_block:
-                print('There are no more tweets!!')
-                no_exception = False
-
-        except twitter.error.TwitterError as e:
-            print('We have to wait 15 mins.')
-            print(e)
-            timeit.sleep(61 * 15)
-    """
+        # save handle tweets
+        data.append(json_obj)
 
     with open(filename, 'w') as out_file:
         json.dump(data, out_file, sort_keys=True, indent=4)
 
     return
+
+
+def add_tweet_to_handle(account_obj, tweet_list, counter):
+    for my_tweets in tweet_list:
+        counter += 1
+        print(counter, my_tweets.text.replace("\n", ' '), my_tweets.created_at, my_tweets.id, len(tweet_list))
+        account_obj['tweets'].append((my_tweets.text.replace("\n", ' '), my_tweets.created_at))
+
+
+def retrieve_tweets(api, screen_name, count=200, max_id=None):
+    have_to_wait = True
+
+    while have_to_wait:
+        try:
+            tweet_block = api.GetUserTimeline(screen_name=screen_name, count=count,  max_id=max_id)
+            have_to_wait = False
+        except twitter.error.TwitterError as e:
+            print('We have to wait 15 mins.')
+            print(e)
+            timeit.sleep(61 * 15)
+
+    return tweet_block
 
 
 if __name__ == '__main__':
