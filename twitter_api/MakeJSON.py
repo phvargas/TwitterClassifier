@@ -36,6 +36,8 @@ def make_json(filename):   # handler is twitter user name without @ example phon
                 for value in row:
                     if json_title[idx] == 'name':
                         json_row[json_title[idx]] = value
+                    elif json_title[idx] == 'handle':
+                        json_row[json_title[idx]] = value
                     else:
                         json_row[json_title[idx]] = value.lower()
 
@@ -69,7 +71,7 @@ if __name__ == '__main__':
 
     infile = sys.argv[1]
     if not os.path.isfile(infile):
-        print('\nCould not find document: ' % infile)
+        print('\nCould not find document: ', infile)
         print('Usage: python3 MakeJSON.py <filename>')
         sys.exit(-1)
 
