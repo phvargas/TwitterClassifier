@@ -126,8 +126,7 @@ class TwitterClient(object):
 
                 tweets.append(parsed_tweet)
 
-                    # return parsed tweets
-
+        # return parsed tweets
         return tweets
 
     def get_tweets_from_json_file(self, filename, **kwargs):
@@ -191,21 +190,18 @@ def main(filename, **kwargs):
     ptweets = [tweet for tweet in tweets if tweet['sentiment'] == 'positive']
 
     # percentage of positive tweets
-    positive_tweets = 100 * len(ptweets) / len(tweets)
-    print("Positive tweets percentage: {0} %  total: {1}".format(positive_tweets, len(ptweets)))
+    positive_tweets_perc = 100 * len(ptweets) / len(tweets)
 
     # picking negative tweets from tweets
     ntweets = [tweet for tweet in tweets if tweet['sentiment'] == 'negative']
 
     # percentage of negative tweets
-    negative_tweets = 100 * len(ntweets) / len(tweets)
-    print("Negative tweets percentage: {0} %   total: {1}".format(negative_tweets, len(ntweets)))
+    negative_tweets_perc = 100 * len(ntweets) / len(tweets)
 
-    # percentage of neutral tweets
-    print("Neutral tweets percentage: {0} %   total: {1}".format(100 - positive_tweets - negative_tweets, len(tweets) -
-                                                                 len(ptweets) - len(ntweets)))
+    # picking negative tweets from tweets
+    neutral_tweets = [tweet for tweet in tweets if tweet['sentiment'] == 'neutral']
 
-    print('Total tweets: ', len(tweets))
+    neutral_tweets_perc = 100 - positive_tweets_perc - negative_tweets_perc
 
     # printing first 10 positive tweets
     print("\n\nPositive tweets:")
@@ -216,6 +212,25 @@ def main(filename, **kwargs):
     print("\n\nNegative tweets:")
     for tweet in ntweets[:10]:
         print(tweet['text'])
+
+    # printing first 10 negative tweets
+    print("\n\nNeutral tweets:")
+    for tweet in neutral_tweets[:10]:
+        print(tweet['text'])
+
+    print()
+    print()
+    print("Positive tweets percentage: {0} %  total: {1}".format(positive_tweets_perc, len(ptweets)))
+    print("Negative tweets percentage: {0} %   total: {1}".format(negative_tweets_perc, len(ntweets)))
+
+    # percentage of neutral tweets
+    print("Neutral tweets percentage: {0} %   total: {1}".format(neutral_tweets_perc,
+                                                                 len(tweets) - len(ptweets) - len(ntweets)))
+    print('Total tweets: ', len(tweets))
+
+    print('{0},{1},{2:.2f},{3}'.format('positive', 'criteria', positive_tweets_perc, len(ptweets)))
+    print('{0},{1},{2:.2f},{3}'.format('negative', 'criteria', negative_tweets_perc, len(ntweets)))
+    print('{0},{1},{2:.2f},{3}'.format('neutral', 'criteria', neutral_tweets_perc, len(neutral_tweets)))
 
 
 if __name__ == "__main__":
