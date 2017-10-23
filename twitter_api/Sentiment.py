@@ -57,6 +57,7 @@ class TwitterClient(object):
         """
         # create TextBlob object of passed tweet text
         analysis = TextBlob(self.clean_tweet(tweet))
+
         # set sentiment
         if analysis.sentiment.polarity > 0:
             return 'positive'
@@ -151,8 +152,10 @@ class TwitterClient(object):
             for account in data:
                 print(account)
                 if account['handle'] in handles:
-                    for tweet in account['tweets']:
-                        print(tweet.strip())
+                    for record in account['tweets']:
+                        tweet = record[0].strip()
+                        timestamp = record[1]
+                        print(tweet)
 
                         # empty dictionary to store required params of a tweet
                         parsed_tweet = {}
@@ -199,7 +202,10 @@ def main(filename, **kwargs):
     print("Negative tweets percentage: {0} %   total: {1}".format(negative_tweets, len(ntweets)))
 
     # percentage of neutral tweets
-    print("Neutral tweets percentage: {0} %   total: {1}".format(100 - positive_tweets - negative_tweets, len(tweets)))
+    print("Neutral tweets percentage: {0} %   total: {1}".format(100 - positive_tweets - negative_tweets, len(tweets) -
+                                                                 len(ptweets) - len(ntweets)))
+
+    print('Total tweets: ', len(tweets))
 
     # printing first 10 positive tweets
     print("\n\nPositive tweets:")
