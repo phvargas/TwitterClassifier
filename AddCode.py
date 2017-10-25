@@ -4,7 +4,7 @@ import os
 
 """
 This Python program
-  1. Inspect data set used for Twitter Harassment
+  1. Add Code to a given set of tweets to maintain Golbeck corpus format
 """
 __author__ = 'Plinio H. Vargas'
 __date__ = 'Fri,  Sep 22, 2017 at 18:28:30'
