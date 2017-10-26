@@ -1,5 +1,6 @@
 import sys
 import os
+import re
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
@@ -197,7 +198,10 @@ def classifier(harassment_data_folder):
 
     #import matplotlib.pyplot as plt
     #plt.matshow(cm)
-    plt.show()
+    #plt.show()
+
+    print('Test doc size:', len(docs_test))
+    print(dataset.data[0].decode('utf-8'), get_filename_sequence(dataset.filenames[0]))
 
     return
 
@@ -216,10 +220,22 @@ def display_conf_table(arr, categories):
         for y in range(0, col):
             if y == 0:
                 predict_text = 'Predicted Cls ' + categories[x]
-                print(' {0:>30} => '.format(predict_text ), end='')
+                print(' {0:>30} => '.format(predict_text), end='')
 
             print('{0:12d}   '.format(arr[x, y]), end='')
         print()
+
+    return
+
+
+def get_filename_sequence(file_path):
+    try:
+        regex = re.search("(\d+)", file_path.split('/')[-1]).group(1)
+
+    except AttributeError:
+        regex = None
+
+    return regex
 
 
 if __name__ == '__main__':
