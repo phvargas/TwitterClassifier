@@ -59,8 +59,8 @@ def classifier(harassment_data_folder):
     print("n_samples: %d" % len(dataset.data))
 
     # split the dataset in training and test set to obtain metrics classification:
-    docs_train, docs_test, y_train, y_test = train_test_split(
-        dataset.data, dataset.target, test_size=0.1, random_state=None)
+    docs_train, docs_test, y_train, y_test, train_filenames, test_filenames = train_test_split(
+        dataset.data, dataset.target, dataset.filenames, test_size=0.1, random_state=None)
 
     # create k-fold cross validation
     k_fold = 10
@@ -150,7 +150,12 @@ def classifier(harassment_data_folder):
             red_dots.append(x)
             red_prob.append(y_prob[x][y_predicted[x]] * x)
             counter += 1
-            print('<{0}> {1} => {2}'.format(counter, docs_test[x].decode(encoding), dataset.target_names[y_predicted[x]]))
+            """
+            print('<{0}> {1} => {2} file ==> {3}'.format(counter, docs_test[x].decode(encoding),
+                                                         dataset.target_names[y_predicted[x]],
+                                                         get_filename_sequence(test_filenames[x])))                                                         
+            """
+            print(test_filenames[x])
         else:
             blue_dots.append(x)
             blue_prob.append(y_prob[x][y_predicted[x]] * x)
