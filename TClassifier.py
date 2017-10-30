@@ -2,6 +2,8 @@ import sys
 import os
 import re
 import numpy as np
+import plotly.offline as py
+import plotly.graph_objs as go
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.svm import LinearSVC
@@ -10,11 +12,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
 from sklearn.datasets import load_files
 from sklearn.model_selection import train_test_split
-from sklearn import metrics
+from sklearn import metrics, linear_model
 from time import strftime, localtime, time
-from sklearn.datasets import fetch_20newsgroups
-from sklearn.model_selection import cross_val_score, cross_val_predict
-from sklearn.model_selection import KFold
+from sklearn.model_selection import cross_val_score, cross_val_predict, cross_validate, KFold
 from scipy.stats import sem
 from matplotlib import pyplot as plt
 from sklearn.externals import joblib
@@ -46,15 +46,11 @@ def classifier(harassment_data_folder):
 
     title = title[-1]
 
+    # Create linear regression object
+    regr = linear_model.LinearRegression()
+
     print('\nLoading harassment dataset files....')
     dataset = load_files(harassment_data_folder, shuffle=False)
-
-    """
-    # test with 20_newsgroup
-    categories = ['alt.atheism', 'soc.religion.christian',
-                  'comp.graphics', 'sci.med']
-    dataset = fetch_20newsgroups(subset='train', categories=categories, shuffle=True, random_state=42)
-    """
 
     print("n_samples: %d" % len(dataset.data))
 
@@ -67,7 +63,7 @@ def classifier(harassment_data_folder):
     cv = KFold(k_fold, shuffle=True, random_state=None)
 
     # build a vectorizer / classifier pipeline that filters out tokens that are too rare or too frequent
-    pipeline = Pipeline([
+    clf = Pipeline([
         ('vect', TfidfVectorizer()),
         ('tfidf', TfidfTransformer()),
         ('clf', SGDClassifier(loss='modified_huber', penalty='l2',
@@ -76,69 +72,46 @@ def classifier(harassment_data_folder):
     ])
 
     # make cross-fold validation using training data
-    scores = cross_val_score(pipeline, docs_train, y_train, cv=cv)
+    scores = cross_val_score(clf, dataset.data, dataset.target, cv=cv)
     print('\nScores,', scores)
 
-    pipeline.fit(docs_train, y_train)
+    # predictions = cross_val_predict(pipeline, docs_test, y_test, cv=cv)
+    predictions = cross_val_predict(clf, dataset.data, dataset.target, cv=cv)
 
-    """
-    build a grid search to find out whether unigrams or bigrams are more useful.
-    Fit the pipeline on the training set using grid search for the parameters
-    """
+    y = dataset.target
+    trace1 = go.Scatter(x=y, y=predictions, mode='markers',
+                        marker=dict(size=8,
+                                    color='rgb(0, 0, 255)',
+                                    line=dict(
+                                        width=2,
+                                        color='rgb(0, 0, 0)'))
+                        )
 
-    parameters = {
-        'vect__ngram_range': [(1, 1), (1, 2)],
-    }
-    grid_search = GridSearchCV(pipeline, parameters, n_jobs=-1)
-    grid_search.fit(dataset.data, dataset.target)
+    trace2 = go.Scatter(x=[y.min(), y.max()], y=[y.min(), y.max()],
+                        line=dict(color='rgb(0, 0, 0)',
+                                  width=5, dash='dash')
+                        )
 
+    layout = go.Layout(showlegend=False,
+                       yaxis=dict(
+                           range=[0, 2],
+                           zeroline=False,
+                           title='Predicted'),
+                       xaxis=dict(
+                           title='Measured', )
+                       )
+    fig = go.Figure(data=[trace1, trace2], layout=layout)
+    py.plot(fig, filename="c-v-predict")
 
-    """
-    print the mean and std for each candidate along with the parameter
-    settings for all the candidates explored by grid search.
-
-    n_candidates = len(grid_search.cv_results_['params'])
-
-    for i in range(n_candidates):
-        print(i, 'params - %s; mean - %0.2f; std - %0.2f'
-                 % (grid_search.cv_results_['params'][i],
-                    grid_search.cv_results_['mean_test_score'][i],
-                    grid_search.cv_results_['std_test_score'][i]))
-
-    new_doc = [
-        "@handle1 your cat is so pretty. Can I pass by your home an pet it?",
-        "@Lesdoggg I take the worst pics ever!! Thank God Beyoncé is just fucking beautiful!! Thanks for pic Queen B!! I was so nervous!!",
-        "Replying to @Boobafett69 @Lesdoggg Tough woman! I bet the Trumpster wouldn't dis her. She would make him wet his diaper. Beautiful"
-    ]
-    """
-
-    new_doc = []
-    no_doc = 50
-    for folder in os.listdir(path):
-        print(folder)
-        print(os.listdir(path + folder))
-        for tweet_file in os.listdir(path + folder)[:no_doc]:
-            tweet_fhs = open(path + folder + '/' + tweet_file, "r", encoding=encoding)
-            new_doc.append(tweet_fhs.read())
-            tweet_fhs.close()
-
-    predictions = cross_val_predict(pipeline, docs_test, y_test, cv=cv)
+    print('predictions: ', predictions, 'size:', len(predictions))
 
     # predict the outcome on the testing set and store it in a variable named y_predicted
-    y_predicted = pipeline.predict(new_doc)
+    clf.fit(docs_train, y_train)
+    y_predicted = clf.predict(docs_test)
+    y_prob = clf.predict_proba(docs_test)
 
-    print()
-    print('Prediction index ===> ', y_predicted)
-    print()
-
-    counter = 0
-    for doc, category in zip(new_doc, y_predicted):
-        counter += 1
-        print('<{0}> {1} => {2}'.format(counter, doc, dataset.target_names[category]))
-
-    # predict the outcome on the testing set and store it in a variable named y_predicted
-    y_predicted = pipeline.predict(docs_test)
-    y_prob = pipeline.predict_proba(docs_test)
+    # write no_harassment false positive and false negative into a file
+    fhs = open('remove_documents.dat', mode='w')
 
     red_dots = []
     red_prob = []
@@ -155,10 +128,13 @@ def classifier(harassment_data_folder):
                                                          dataset.target_names[y_predicted[x]],
                                                          get_filename_sequence(test_filenames[x])))                                                         
             """
-            print(test_filenames[x])
+            if dataset.target_names[y_predicted[x]] == 'harassment':
+                #print(test_filenames[x])
+                fhs.write('%s\n' % test_filenames[x])
         else:
             blue_dots.append(x)
             blue_prob.append(y_prob[x][y_predicted[x]] * x)
+    fhs.close()
 
     # Print the classification report
     print()
@@ -168,8 +144,9 @@ def classifier(harassment_data_folder):
     print()
 
     print("  {0}-fold cross validation mean score: {1:.3f} (+/-{2:.3f})".format(k_fold, np.mean(scores), sem(scores)))
-    accuracy = metrics.r2_score(y_test, predictions)
-    print("  R^2 score ---> ", accuracy)
+    rsqr_score = metrics.r2_score(dataset.target, predictions)
+    print("  R^2 score ---> ", rsqr_score)
+    print('  accuracy', metrics.accuracy_score(dataset.target, predictions))
 
     print()
     print("  {0} dataset size: {1}".format(title, len(dataset.data)))
@@ -179,7 +156,7 @@ def classifier(harassment_data_folder):
     print()
     print('Writing persistence model...')
     filename = 'models/' + title + '.pkl'
-    joblib.dump(pipeline, filename)
+    joblib.dump(clf, filename)
 
     # preserve categories
     filename = 'models/' + title + '_category.pkl'
@@ -206,7 +183,7 @@ def classifier(harassment_data_folder):
     #plt.show()
 
     print('Test doc size:', len(docs_test))
-    print(dataset.data[0].decode('utf-8'), get_filename_sequence(dataset.filenames[0]))
+    print(docs_test[0])
 
     return
 
