@@ -5,7 +5,7 @@ from time import strftime, localtime, time
 
 """
 This Python program
-  1. Script CreckDuplicate.py must be run first.  After the output file has being inspected 
+  1. Script CheckDuplicate.py must be run first.  After the output file has being inspected 
      and processed, then that file can be used to removed tweets in the corpus that are
      ambiguous.  
      
