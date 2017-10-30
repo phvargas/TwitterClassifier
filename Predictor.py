@@ -2,7 +2,7 @@ import sys
 import os
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.feature_extraction.text import TfidfTransformer, CountVectorizer
 from sklearn.linear_model import SGDClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
@@ -29,6 +29,8 @@ __email__ = 'pvargas@cs.odu.edu'
 def predict(model, category_path, doc):
     """
     :param model: folder where dataset classification sub-folders reside
+    :param category_path: path where category model resides
+    :param doc: path of document to be compared
     :return: void
     """
     encoding = 'utf-8'
@@ -45,19 +47,52 @@ def predict(model, category_path, doc):
     # load category nomenclature into category object
     category = joblib.load(category_path)
 
+    print('\nLoading harassment dataset files....')
+    dataset = load_files(doc, shuffle=False)
+
+    count_vect = CountVectorizer()
+    tfidf_transformer = TfidfTransformer()
+    X_train_counts = count_vect.fit_transform(dataset.data)
+
+    print('X_train_Counts length', X_train_counts.shape)
+    print('Number of documents:', len(dataset.data))
+
+    X_data = tfidf_transformer.fit_transform(X_train_counts)
+    print('X_data type:', type(X_data))
+
     new_doc = []
-    with open(doc, mode='r') as in_file:
+    for values in dataset.data:
+        new_doc.append(values.decode('utf-8'))
+
+    """
+    #with open(doc, mode='r') as in_file:
         for record in in_file:
             new_doc.append(record)
+    """
 
     # predict the outcome on the testing set and store it in a variable named y_predicted
     y_predicted = pipeline.predict(new_doc)
 
     counter = 0
+    wrong = 0
     for doc, cat in zip(new_doc, y_predicted):
+        if cat != dataset.target[counter]:
+            #print('<{0}> {1} => {2}  ==> original class: {3}'.format(counter + 1, doc.strip(), category[cat],
+            #                                                         category[dataset.target[counter]]))
+            wrong += 1
         counter += 1
-        print('<{0}> {1} => {2}'.format(counter, doc.strip(), category[cat]))
 
+    print('Number of missclassification:', wrong)
+    print('Success ratio:', (counter - wrong) / counter)
+
+    print('data lenghth', X_data.shape)
+    print('cat length', len(dataset.target))
+
+    tfidf_feature = []
+    for vector in X_data:
+        tfidf_feature.append(sum(vector.toarray()[0]))
+    plt.scatter(range(len(dataset.data)), tfidf_feature, color='black')
+    plt.show()
     return
 
 
@@ -82,7 +117,7 @@ if __name__ == '__main__':
     doc_path = sys.argv[3]
 
     if not os.path.isfile(path):
-        print('\nCould not find model in file: ' % path)
+        print('\nCould not find model in file: %s' % path)
         print('Usage: python3 Predictor.py <model_path> <cat_path> <doc_path>')
         sys.exit(-1)
 
@@ -91,7 +126,7 @@ if __name__ == '__main__':
         print('Usage: python3 Predictor.py <model_path> <cat_path> <doc_path>')
         sys.exit(-1)
 
-    if not os.path.isfile(doc_path):
+    if not os.path.isdir(doc_path):
         print('\nCould not find document: ' % doc_path)
         print('Usage: python3 Predictor.py <model_path> <cat_path> <doc_path>')
         sys.exit(-1)
