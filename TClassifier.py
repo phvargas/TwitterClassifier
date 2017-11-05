@@ -4,8 +4,7 @@ import re
 import numpy as np
 import plotly.offline as py
 import plotly.graph_objs as go
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.feature_extraction.text import TfidfTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
 from sklearn.svm import LinearSVC
 from sklearn.linear_model import SGDClassifier
 from sklearn.pipeline import Pipeline
@@ -72,12 +71,13 @@ def classifier(harassment_data_folder):
     ])
 
     # make cross-fold validation using training data
-    scores = cross_val_score(clf, dataset.data, dataset.target, cv=cv)
+    scores = cross_val_score(clf, docs_train, y_train, cv=cv)
     print('\nScores,', scores)
 
     # predictions = cross_val_predict(pipeline, docs_test, y_test, cv=cv)
-    predictions = cross_val_predict(clf, dataset.data, dataset.target, cv=cv)
+    predictions = cross_val_predict(clf, docs_train, y_train, cv=cv)
 
+    """
     y = dataset.target
     trace1 = go.Scatter(x=y, y=predictions, mode='markers',
                         marker=dict(size=8,
@@ -102,7 +102,7 @@ def classifier(harassment_data_folder):
                        )
     fig = go.Figure(data=[trace1, trace2], layout=layout)
     py.plot(fig, filename="c-v-predict")
-
+    """
     print('predictions: ', predictions, 'size:', len(predictions))
 
     # predict the outcome on the testing set and store it in a variable named y_predicted
@@ -156,11 +156,11 @@ def classifier(harassment_data_folder):
     print()
     print('Writing persistence model...')
     filename = 'models/' + title + '.pkl'
-    joblib.dump(clf, filename)
+    #joblib.dump(clf, filename)
 
     # preserve categories
     filename = 'models/' + title + '_category.pkl'
-    joblib.dump(dataset.target_names, filename)
+    #joblib.dump(dataset.target_names, filename)
 
     # Print and plot the confusion matrix
     cm = metrics.confusion_matrix(y_test, y_predicted)
