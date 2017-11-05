@@ -1,7 +1,6 @@
 import sys
 import os
 import numpy as np
-from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer, CountVectorizer
 from sklearn.linear_model import SGDClassifier
 from sklearn.pipeline import Pipeline
@@ -74,24 +73,42 @@ def predict(model, category_path, doc):
     y_predicted = pipeline.predict(new_doc)
 
     counter = 0
+    harassment = 0
+    no_harassment = 0
     wrong = 0
     for doc, cat in zip(new_doc, y_predicted):
         if cat != dataset.target[counter]:
             #print('<{0}> {1} => {2}  ==> original class: {3}'.format(counter + 1, doc.strip(), category[cat],
             #                                                         category[dataset.target[counter]]))
             wrong += 1
+            if category[dataset.target[counter]] == 'harassment':
+                harassment += 1
+            else:
+                no_harassment += 1
         counter += 1
 
-    print('Number of missclassification:', wrong)
+    print('Number of misclassification:', wrong)
+    print('Harassment misclassification:', harassment)
+    print('No harassment misclassification:', no_harassment)
     print('Success ratio:', (counter - wrong) / counter)
 
     print('data lenghth', X_data.shape)
     print('cat length', len(dataset.target))
 
-    tfidf_feature = []
-    for vector in X_data:
-        tfidf_feature.append(sum(vector.toarray()[0]))
-    plt.scatter(range(len(dataset.data)), tfidf_feature, color='black')
+    tfidf_feature_ha = []
+    tfidf_feature_no = []
+    for vector, category_doc in zip(X_data, dataset.target):
+        if category_doc == 0:
+            tfidf_feature_ha.append(sum(vector.toarray()[0]))
+        else:
+            tfidf_feature_no.append(sum(vector.toarray()[0]))
+
+    plt.scatter(range(len(tfidf_feature_ha)), tfidf_feature_ha, color='blue')
+    plt.scatter(range(len(tfidf_feature_no)), tfidf_feature_no, color='red')
+
+    plt.title('Tweet TFIDF Representation no_ambiguous Corpus')
+    plt.xlabel('Tweet')
+    plt.ylabel('Document Sum(TFIDF)')
     plt.show()
     return
 
@@ -122,7 +139,7 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     if not os.path.isfile(path):
-        print('\nCould not find category file: ' % path)
+        print('\nCould not find category file: ' % cat_path)
         print('Usage: python3 Predictor.py <model_path> <cat_path> <doc_path>')
         sys.exit(-1)
 
