@@ -4,6 +4,8 @@ import re
 import numpy as np
 import plotly.offline as py
 import plotly.graph_objs as go
+import Utilities.ConvertDataType as conv
+import algorithms.TextClassifiers as alg
 from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer, CountVectorizer
 from sklearn.svm import LinearSVC
 from sklearn.linear_model import SGDClassifier
@@ -20,12 +22,26 @@ from matplotlib import pyplot as plt
 from sklearn.externals import joblib
 
 
-"""Build a twitter harassment detector model
+"""Build a twitter harassment classification model
 
-   This code uses script obtained from scikit-learn tutorial, specifically exercise 02 of 
-   the tutorial.  Tutorial url: http://scikit-learn.org/stable/tutorial/text_analytics/working_with_text_data.html
-        Author: Olivier Grisel <olivier.grisel@ensta.org>
-        License: Simplified BSD        
+TClassifier takes as parameter the path where the working corpus resides, in order to train and validate its documents.
+The script creates a persistent model saved on a pickle file named after the corpus' name and the algorithm utilized to train
+the model. For example, if a path where the corpus resides is /data/typeOfThing and SVM is the selected SVM algorithm,
+the persistent model will be saved as models/typeOfThings_svm.pkl
+
+## List of algorithm parameters
+parameter    description
+========================
+svc          LinearSVC
+mnb          MultinomialNB
+ncentroid    Nearest Centroid
+ridge        Ridge
+knn          KNeighbors
+pac          Passive Aggressive
+rndforrest   Random Forrest
+perceptron   Perceptron
+bernoulli    BernoulliNB
+sgd          Stochastic Gradient Descent   
 """
 
 __author__ = 'Plinio H. Vargas'
@@ -33,7 +49,7 @@ __date__ = 'Thu,  Sep 21, 2017 at 09:46:01'
 __email__ = 'pvargas@cs.odu.edu'
 
 
-def classifier(harassment_data_folder):
+def classifier(harassment_data_folder, **kwargs):
     """
     :param harassment_data_folder: folder where dataset classification sub-folders reside
     :return: void
@@ -64,20 +80,19 @@ def classifier(harassment_data_folder):
 
     # build a vectorizer / classifier pipeline that filters out tokens that are too rare or too frequent
     """
-    clf = Pipeline([
-        ('vect', TfidfVectorizer()),
-        ('tfidf', TfidfTransformer()),
-        ('clf', SGDClassifier(loss='modified_huber', penalty='l2',
-                              alpha=1e-5, random_state=42,
-                              max_iter=5, tol=None)),
-    ])
+    :parameter for SGDClassifier(loss='modified_huber', penalty='l2',
+                                 alpha=1e-5, random_state=42,
+                                 max_iter=5, tol=None))
+
+    :parameter default for svm.SVC(C=1.0, cache_size=7000, class_weight=None, coef0=0.0, degree=3,
+                                   gamma='auto', kernel='rbf', max_iter=-1, probability=True, random_state=None,
+                                   shrinking=True, tol=0.001, verbose=False))
     """
+
     clf = Pipeline([
         ('vect', TfidfVectorizer()),
         ('tfidf', TfidfTransformer()),
-        ('clf', svm.SVC(C=1.0, cache_size=7000, class_weight=None, coef0=0.0, degree=3,
-                        gamma='auto', kernel='rbf', max_iter=-1, probability=True, random_state=None,
-                        shrinking=True, tol=0.001, verbose=False)),
+        ('clf', alg.get_algorithm(**kwargs)),
     ])
 
     # make cross-fold validation using training data
@@ -259,18 +274,39 @@ if __name__ == '__main__':
     print('Starting Time: %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
 
     # checks if path was passed as an argument
-    if len(sys.argv) != 2:
-        print('Usage: python3 TClassifier.py <corpus_folder>')
+    if len(sys.argv) < 3:
+        print('\nNot enough arguments..')
+        print('Usage: python3 TClassifier.py <corpus_folder> <algorithm="algorithm"> params:')
         sys.exit(-1)
 
     path = sys.argv[1]
 
     if not os.path.isdir(path):
         print('\nPath provided <<%s>> MUST be a folder.' % path)
-        print('Usage: python3 TClassifier.py <corpus_folder>')
+        print('Usage: python3 TClassifier.py <corpus_folder> <algorithm="algorithm"> params:')
         sys.exit(-1)
 
-    classifier(path)
+    params = sys.argv[2].split('=')
+    if params[0] != 'algorithm':
+        print('\nSecond parameter %s needs to be of the form algorithm=algorithm_type' % sys.argv[2])
+        print('Usage: python3 TClassifier.py <corpus_folder> <algorithm=algorithm_type> params:')
+        print('Example: python3 TClassifier.py /data/my_corpus algorithm=sdg')
+        sys.exit(-1)
+
+    params = conv.list2kwarg(sys.argv[2:])
+
+    """
+    SGDClassifier params example:
+    algorithm=sgd loss=modified_huber penalty=l2 alpha=1e-5 random_state=42 max_iter=5 tol=None
+    """
+
+    if params:
+        if alg.get_algorithm(**params):
+            classifier(path, **params)
+    else:
+        print('\nError: parameters provided  NOT valid {0}'.format(sys.argv[2:]))
+        print('Usage: python3 TClassifier.py <corpus_folder> <algorithm=algorithm_type> params:')
+        print('Example: python3 TClassifier.py /data/my_corpus algorithm=sdg')
 
     print('\nEnd Time:  %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
     exec_time = time()-start
