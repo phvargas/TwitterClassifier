@@ -1,17 +1,9 @@
 import sys
 import os
-import numpy as np
+import re
 from sklearn.feature_extraction.text import TfidfTransformer, CountVectorizer
-from sklearn.linear_model import SGDClassifier
-from sklearn.pipeline import Pipeline
-from sklearn.model_selection import GridSearchCV
 from sklearn.datasets import load_files
-from sklearn.model_selection import train_test_split
-from sklearn import metrics
 from time import strftime, localtime, time
-from sklearn.model_selection import cross_val_score, cross_val_predict
-from sklearn.model_selection import KFold
-from scipy.stats import sem
 from matplotlib import pyplot as plt
 from sklearn.externals import joblib
 
@@ -76,16 +68,40 @@ def predict(model, category_path, doc):
     harassment = 0
     no_harassment = 0
     wrong = 0
+    bin = {'0-2': 0, '2-3': 0, '3-3.5': 0, '3.5-': 0}
+
+    tfidf_feature = []
+    tfidf_miss_clf = []
+
     for doc, cat in zip(new_doc, y_predicted):
         if cat != dataset.target[counter]:
             #print('<{0}> {1} => {2}  ==> original class: {3}'.format(counter + 1, doc.strip(), category[cat],
             #                                                         category[dataset.target[counter]]))
             wrong += 1
+
+            tfidf_sum = sum(X_data[counter].toarray()[0])
+            tfidf_miss_clf.append(tfidf_sum)
+
+            if tfidf_sum <= 2:
+                bin['0-2'] += 1
+            elif tfidf_sum <= 3:
+                bin['2-3'] += 1
+            elif tfidf_sum <= 3.5:
+                bin['3-3.5'] += 1
+            else:
+                bin['3.5-'] += 1
+
             if category[dataset.target[counter]] == 'harassment':
                 harassment += 1
             else:
                 no_harassment += 1
+        else:
+            tfidf_feature.append(sum(X_data[counter].toarray()[0]))
         counter += 1
+
+    print(bin)
+    for key in bin:
+        print('%s,%d' % (key, bin[key]))
 
     print('Number of misclassification:', wrong)
     print('Harassment misclassification:', harassment)
@@ -95,22 +111,24 @@ def predict(model, category_path, doc):
     print('data lenghth', X_data.shape)
     print('cat length', len(dataset.target))
 
-    tfidf_feature_ha = []
-    tfidf_feature_no = []
-    for vector, category_doc in zip(X_data, dataset.target):
-        if category_doc == 0:
-            tfidf_feature_ha.append(sum(vector.toarray()[0]))
-        else:
-            tfidf_feature_no.append(sum(vector.toarray()[0]))
+    plt.scatter(range(len(tfidf_feature)), tfidf_feature, color='black')
+    plt.scatter(range(len(tfidf_miss_clf)), tfidf_miss_clf, color='red')
 
-    plt.scatter(range(len(tfidf_feature_ha)), tfidf_feature_ha, color='blue')
-    plt.scatter(range(len(tfidf_feature_no)), tfidf_feature_no, color='red')
-
-    plt.title('Tweet TFIDF Representation no_ambiguous Corpus')
+    plt.title('Miss Classification of Test Document in no_ambiguous Corpus\n Using  TFIDF Representation ')
     plt.xlabel('Tweet')
     plt.ylabel('Document Sum(TFIDF)')
     plt.show()
     return
+
+
+def get_filename_sequence(file_path):
+    try:
+        regex = re.search("(\d+)", file_path.split('/')[-1]).group(1)
+
+    except AttributeError:
+        regex = None
+
+    return regex
 
 
 if __name__ == '__main__':

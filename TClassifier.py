@@ -4,9 +4,10 @@ import re
 import numpy as np
 import plotly.offline as py
 import plotly.graph_objs as go
-from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer, CountVectorizer
 from sklearn.svm import LinearSVC
 from sklearn.linear_model import SGDClassifier
+from sklearn import svm
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
 from sklearn.datasets import load_files
@@ -62,6 +63,7 @@ def classifier(harassment_data_folder):
     cv = KFold(k_fold, shuffle=True, random_state=None)
 
     # build a vectorizer / classifier pipeline that filters out tokens that are too rare or too frequent
+    """
     clf = Pipeline([
         ('vect', TfidfVectorizer()),
         ('tfidf', TfidfTransformer()),
@@ -69,13 +71,23 @@ def classifier(harassment_data_folder):
                               alpha=1e-5, random_state=42,
                               max_iter=5, tol=None)),
     ])
+    """
+    clf = Pipeline([
+        ('vect', TfidfVectorizer()),
+        ('tfidf', TfidfTransformer()),
+        ('clf', svm.SVC(C=1.0, cache_size=7000, class_weight=None, coef0=0.0, degree=3,
+                        gamma='auto', kernel='rbf', max_iter=-1, probability=True, random_state=None,
+                        shrinking=True, tol=0.001, verbose=False)),
+    ])
 
     # make cross-fold validation using training data
+    print('Obtaining %d-fold validation scores' % k_fold)
     scores = cross_val_score(clf, docs_train, y_train, cv=cv)
     print('\nScores,', scores)
 
     # predictions = cross_val_predict(pipeline, docs_test, y_test, cv=cv)
-    predictions = cross_val_predict(clf, docs_train, y_train, cv=cv)
+    print('Obtaining cross validation predictions to test set ....')
+    predictions = cross_val_predict(clf, docs_test, y_test, cv=cv)
 
     """
     y = dataset.target
@@ -105,11 +117,6 @@ def classifier(harassment_data_folder):
     """
     print('predictions: ', predictions, 'size:', len(predictions))
 
-    # predict the outcome on the testing set and store it in a variable named y_predicted
-    clf.fit(docs_train, y_train)
-    y_predicted = clf.predict(docs_test)
-    y_prob = clf.predict_proba(docs_test)
-
     # write no_harassment false positive and false negative into a file
     fhs = open('remove_documents.dat', mode='w')
 
@@ -117,36 +124,58 @@ def classifier(harassment_data_folder):
     red_prob = []
     blue_dots = []
     blue_prob = []
+
+    count_vect = CountVectorizer()
+    tfidf_transformer = TfidfTransformer()
+    X_train_counts = count_vect.fit_transform(docs_test)
+
+    print('X_train_Counts length', X_train_counts.shape)
+    print('Number of documents:', len(docs_test))
+
+    X_data = tfidf_transformer.fit_transform(X_train_counts)
+    print('X_data type:', type(X_data))
+
     counter = 0
-    for x in range(len(y_predicted)):
-        if y_predicted[x] != y_test[x]:
+    bin = {'0-2': 0, '2-3': 0, '3-3.5': 0, '3.5-': 0}
+
+    for x in range(len(predictions)):
+        if predictions[x] != y_test[x]:
             red_dots.append(x)
-            red_prob.append(y_prob[x][y_predicted[x]] * x)
             counter += 1
             """
             print('<{0}> {1} => {2} file ==> {3}'.format(counter, docs_test[x].decode(encoding),
                                                          dataset.target_names[y_predicted[x]],
                                                          get_filename_sequence(test_filenames[x])))                                                         
             """
-            if dataset.target_names[y_predicted[x]] == 'harassment':
-                #print(test_filenames[x])
-                fhs.write('%s\n' % test_filenames[x])
+            tfidf_sum = sum(X_data[counter].toarray()[0])
+
+            if tfidf_sum <= 2:
+                bin['0-2'] += 1
+            elif tfidf_sum <= 3:
+                bin['2-3'] += 1
+            elif tfidf_sum <= 3.5:
+                bin['3-3.5'] += 1
+            else:
+                bin['3.5-'] += 1
         else:
             blue_dots.append(x)
-            blue_prob.append(y_prob[x][y_predicted[x]] * x)
+    print(bin)
+    for key in bin:
+        print('%s,%d' % (key, bin[key]))
+
     fhs.close()
 
     # Print the classification report
     print()
-    print(metrics.classification_report(y_test, y_predicted,
+    print(metrics.classification_report(y_test, predictions,
                                         target_names=dataset.target_names))
 
     print()
 
     print("  {0}-fold cross validation mean score: {1:.3f} (+/-{2:.3f})".format(k_fold, np.mean(scores), sem(scores)))
-    rsqr_score = metrics.r2_score(dataset.target, predictions)
+    rsqr_score = metrics.r2_score(y_test, predictions)
     print("  R^2 score ---> ", rsqr_score)
-    print('  accuracy', metrics.accuracy_score(dataset.target, predictions))
+    print('  accuracy', metrics.accuracy_score(y_test, predictions))
 
     print()
     print("  {0} dataset size: {1}".format(title, len(dataset.data)))
@@ -156,14 +185,14 @@ def classifier(harassment_data_folder):
     print()
     print('Writing persistence model...')
     filename = 'models/' + title + '.pkl'
-    #joblib.dump(clf, filename)
+    joblib.dump(clf, filename)
 
     # preserve categories
     filename = 'models/' + title + '_category.pkl'
     #joblib.dump(dataset.target_names, filename)
 
     # Print and plot the confusion matrix
-    cm = metrics.confusion_matrix(y_test, y_predicted)
+    cm = metrics.confusion_matrix(y_test, predictions)
 
     print(cm)
     print()
@@ -171,12 +200,12 @@ def classifier(harassment_data_folder):
     display_conf_table(cm, dataset.target_names)
 
     # plot scatter plot
-    plt.scatter(blue_dots, blue_prob, label='true positive + true negative')
-    plt.scatter(red_dots, red_prob, color='red', label='false positive + false negative')
-    plt.title(title + " Predicted Category Probability")
-    plt.xlabel("Tweet_index")
-    plt.ylabel("Pr(category | tweet) * tweet_index")
-    plt.legend()
+    #plt.scatter(blue_dots, blue_prob, label='true positive + true negative')
+    #plt.scatter(red_dots, red_prob, color='red', label='false positive + false negative')
+    #plt.title(title + " Predicted Category Probability")
+    #plt.xlabel("Tweet_index")
+    #plt.ylabel("Pr(category | tweet) * tweet_index")
+    #plt.legend()
 
     #import matplotlib.pyplot as plt
     #plt.matshow(cm)
@@ -244,5 +273,6 @@ if __name__ == '__main__':
     classifier(path)
 
     print('\nEnd Time:  %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
-    print('Execution Time: %.2f seconds' % (time()-start))
+    exec_time = time()-start
+    print('Execution Time: %.2f seconds or %2.f minutes' % (exec_time, exec_time / 60))
 sys.exit(0)
