@@ -12,9 +12,9 @@ the persistent model will be saved as models/typeOfThings_svm.pkl
 
 ### List of algorithm parameters
 
-###parameter    description
+### parameter    description
 -----------------------------------------
-svc          LinearSVC<br>
+svc\t          LinearSVC<br>
 mnb          MultinomialNB<br>
 ncentroid    Nearest Centroid<br>
 ridge        Ridge<br>
