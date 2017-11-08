@@ -7,7 +7,7 @@ import operator
 import os
 import sys
 import getopt
-# import jpype
+import JPype.jpype
 
 from bs4 import BeautifulSoup
 from datetime import datetime
@@ -1203,17 +1203,17 @@ def extractTweetsMain(driver, finalTweetsColDict, tweetConvURI, tweetConvMaxTwee
 
 def clickShowMore(driver):
     script = '''
-		//revise when better understanding of DOM is established
-		var showMoreSignature = ['[class="ThreadedConversation-moreRepliesLink"]', '[class="show-more-link"]'];
-		for(var i = 0; i<showMoreSignature.length; i++)
-		{
-			var showMore = document.querySelectorAll(showMoreSignature[i]);
-			for(var j=0; j<showMore.length; j++)
-			{
-				showMore[j].click();
-			}
-		}
-	'''
+    //revise when better understanding of DOM is established
+    var showMoreSignature = ['[class="ThreadedConversation-moreRepliesLink"]', '[class="show-more-link"]'];
+    for(var i = 0; i<showMoreSignature.length; i++)
+    {
+        var showMore = document.querySelectorAll(showMoreSignature[i]);
+        for(var j=0; j<showMore.length; j++)
+        {
+            showMore[j].click();
+        }
+    }
+    '''
     driver.execute_script(script)
 
     '''
@@ -1234,8 +1234,7 @@ def clickShowMore(driver):
 
 
 def scrollDown(driver, uri, maxScroll=15, sleepSeconds=1):  # 15, 1
-
-    if (uri.find('/status/') != -1):
+    if uri.find('/status/') != -1:
         # this function doesn't work in firefox
         actions = ActionChains(driver)
         for i in range(maxScroll):

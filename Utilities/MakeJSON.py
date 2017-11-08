@@ -13,7 +13,7 @@ __date__ = 'Wed,  Oct 18, 2017 at 20:22:53'
 __email__ = 'pvargas@cs.odu.edu'
 
 
-def make_json(filename):   # handler is twitter user name without @ example phone_dude for @phone_dude
+def make_json(filename):
     """
     Parameters used in make_json:
        filename: path of filename where csv format resides
