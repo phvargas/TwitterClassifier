@@ -2,7 +2,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn import datasets, linear_model
 from sklearn.metrics import mean_squared_error, r2_score
-from sklearn.naive_bayes import N
 
 # Load the diabetes dataset
 diabetes = datasets.load_diabetes()

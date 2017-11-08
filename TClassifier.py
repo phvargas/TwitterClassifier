@@ -49,7 +49,7 @@ __date__ = 'Thu,  Sep 21, 2017 at 09:46:01'
 __email__ = 'pvargas@cs.odu.edu'
 
 
-def classifier(harassment_data_folder, **kwargs):
+def classifier(harassment_data_folder, clf_alg):
     """
     :param harassment_data_folder: folder where dataset classification sub-folders reside
     :return: void
@@ -92,7 +92,7 @@ def classifier(harassment_data_folder, **kwargs):
     clf = Pipeline([
         ('vect', TfidfVectorizer()),
         ('tfidf', TfidfTransformer()),
-        ('clf', alg.get_algorithm(**kwargs)),
+        ('clf', clf_alg),
     ])
 
     # make cross-fold validation using training data
@@ -298,11 +298,13 @@ if __name__ == '__main__':
     """
     SGDClassifier params example:
     algorithm=sgd loss=modified_huber penalty=l2 alpha=1e-5 random_state=42 max_iter=5 tol=None
+    
+    
     """
-
+    algorithm = alg.get_algorithm(**params)
     if params:
-        if alg.get_algorithm(**params):
-            classifier(path, **params)
+        if algorithm:
+            classifier(path, algorithm)
     else:
         print('\nError: parameters provided  NOT valid {0}'.format(sys.argv[2:]))
         print('Usage: python3 TClassifier.py <corpus_folder> <algorithm=algorithm_type> params:')
