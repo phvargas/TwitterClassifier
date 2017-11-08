@@ -12,15 +12,15 @@ the persistent model will be saved as models/typeOfThings_svm.pkl
 
 ### List of algorithm parameters
 
-parameter    description
+###parameter    description
 -----------------------------------------
 svc          LinearSVC<br>
-mnb          MultinomialNB
-ncentroid    Nearest Centroid
-ridge        Ridge
-knn          KNeighbors
-pac          Passive Aggressive
-rndforrest   Random Forrest
-perceptron   Perceptron
-bernoulli    BernoulliNB
-sgd          Stochastic Gradient Descent
+mnb          MultinomialNB<br>
+ncentroid    Nearest Centroid<br>
+ridge        Ridge<br>
+knn          KNeighbors<br>
+pac          Passive Aggressive<br>
+rndforrest   Random Forrest<br>
+perceptron   Perceptron<br>
+bernoulli    BernoulliNB<br>
+sgd          Stochastic Gradient Descent<br>
