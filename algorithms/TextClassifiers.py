@@ -32,12 +32,10 @@ def get_algorithm(**kwargs):
     kwargs.pop('algorithm', None)
 
     for key in kwargs:
-        if key == 'random_state' or key == 'max_iter':
-            kwargs[key] = int(kwargs[key])
-        elif key == 'alpha':
-            kwargs[key] = float(kwargs[key])
-        elif kwargs[key] == 'None':
-            kwargs[key] = None
+        try:
+            kwargs[key] = eval(kwargs[key])
+        except NameError:
+            pass
 
     if algorithm == 'sgd':
         clf = SGDClassifier(**kwargs)
