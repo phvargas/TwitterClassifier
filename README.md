@@ -11,16 +11,15 @@ the model. For example, if a path where the corpus resides is /data/typeOfThing 
 the persistent model will be saved as models/typeOfThings_svm.pkl
 
 ### List of algorithm parameters
-
-### parameter    description
------------------------------------------
-svc\t          LinearSVC<br>
-mnb          MultinomialNB<br>
-ncentroid    Nearest Centroid<br>
-ridge        Ridge<br>
-knn          KNeighbors<br>
-pac          Passive Aggressive<br>
-rndforrest   Random Forrest<br>
-perceptron   Perceptron<br>
-bernoulli    BernoulliNB<br>
-sgd          Stochastic Gradient Descent<br>
+| parameter     | description   |
+| ------------- | ------------- |
+|svc            | LinearSVC|
+|mnb            |MultinomialNB|
+|ncentroid      |Nearest Centroid|
+|ridge          |Ridge|
+|knn            |KNeighbors|
+|pac            |Passive Aggressive|
+|rndforrest     |Random Forrest|
+|perceptron     |Perceptron|
+|bernoulli      |BernoulliNB|
+|sgd            |Stochastic Gradient Descen|
