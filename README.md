@@ -11,9 +11,10 @@ the model. For example, if a path where the corpus resides is /data/typeOfThing 
 the persistent model will be saved as models/typeOfThings_svm.pkl
 
 ### List of algorithm parameters
+
 parameter    description
 -----------------------------------------
-svc          LinearSVC
+svc          LinearSVC<br>
 mnb          MultinomialNB
 ncentroid    Nearest Centroid
 ridge        Ridge
