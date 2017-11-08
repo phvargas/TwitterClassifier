@@ -2,8 +2,8 @@ import sys
 import json
 import twitter
 from time import strftime, localtime, time
-from twitter_api.Keys import provide_keys
-import twitter_api.Subjects as research
+from twitter_apps.Keys import provide_keys
+import twitter_apps.Subjects as research
 import time as timeit
 
 """

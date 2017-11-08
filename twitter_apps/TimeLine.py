@@ -1,5 +1,5 @@
 import tweepy
-from twitter_api.Keys import provide_keys
+from twitter_apps.Keys import provide_keys
 
 # keys and tokens from the Twitter Dev Console
 key = provide_keys('males')

@@ -1,8 +1,8 @@
 import sys
 import os
 import json
-import twitter_api.Subjects as research
-from twitter_api.Sentiment import TwitterClient
+import twitter_apps.Subjects as research
+from twitter_apps.Sentiment import TwitterClient
 from time import strftime, localtime, time
 
 """

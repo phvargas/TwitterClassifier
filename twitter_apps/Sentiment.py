@@ -6,8 +6,8 @@ import json
 from tweepy import OAuthHandler
 from textblob import TextBlob
 from time import strftime, localtime, time
-from twitter_api.Keys import provide_keys
-import twitter_api.Subjects as research
+from twitter_apps.Keys import provide_keys
+import twitter_apps.Subjects as research
 
 
 class TwitterClient(object):
