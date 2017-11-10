@@ -16,10 +16,10 @@ def add_code(in_filename, out_filename, counter):
 
     with open(in_filename, "r", encoding='iso-8859-1') as f_in:
         with open(out_filename, "w", encoding='iso-8859-1') as f_out:
-            f_out.write("ID\tCode\tTweet")
+            f_out.write("ID\tCode\tTweet\n")
             for line in f_in:
                 counter += 1
-                print("%d\t%s" % (counter, line))
+                print("%d\t%s" % (counter, line.strip()))
                 f_out.write("%d\t%s" % (counter, line))
 
     return
