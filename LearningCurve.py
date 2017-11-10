@@ -57,7 +57,7 @@ def plot_learning_curve(estimator, title, X, y, ylim=None, cv=None,
     if ylim is not None:
         plt.ylim(*ylim)
     plt.xlabel("Training examples")
-    plt.ylabel("Score")
+    plt.ylabel("Validation Score")
 
     print('Getting training score values ....')
     train_sizes, train_scores, test_scores = learning_curve(
@@ -85,7 +85,7 @@ def plot_learning_curve(estimator, title, X, y, ylim=None, cv=None,
 start = time()
 print('Starting Time: %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
 
-folder_model = 'data/dataset/no_ambiguous/'
+folder_model = '/data/harassment/dataset/wsdl_subj_golbeck/'
 dataset = load_files(folder_model, shuffle=False)
 
 stop_words = text.ENGLISH_STOP_WORDS.union(['https', 'http'])
@@ -96,14 +96,14 @@ X = count_vect.fit_transform(dataset.data)
 y = dataset.target
 
 
-#title = "Learning Curves (SGD algorithm / crawl_tweets_26_74 dataset)"
-title = "Learning Curves (SVM algorithm / no_ambiguous dataset)\nkernel=linear"
+title = "Learning Curves (SGD algorithm / wsdl_subj_golbeck)"
+#title = "Learning Curves (SVM algorithm / wsdl_subj_golbeck)\nkernel=linear"
 # Cross validation with 100 iterations to get smoother mean test and train
 # score curves, each time with 20% data randomly selected as a validation set.
 n_splits = 100
 cv = ShuffleSplit(n_splits=n_splits, test_size=0.1, random_state=None)
 #cv = KFold(n_splits, shuffle=True, random_state=None)
-"""
+
 estimator = SGDClassifier(loss='modified_huber', penalty='l2',
                           alpha=1e-5, random_state=42,
                           max_iter=5, tol=None)
@@ -111,7 +111,7 @@ estimator = SGDClassifier(loss='modified_huber', penalty='l2',
 estimator = svm.SVC(C=1.0, cache_size=8000, class_weight=None, coef0=0.0, degree=3,
                     gamma='auto', kernel='linear', max_iter=-1, probability=True, random_state=None,
                     shrinking=True, tol=0.001, verbose=False)
-
+"""
 plot_learning_curve(estimator, title, X, y, ylim=(0.7, 1.01), cv=cv, n_jobs=4)
 
 print('\nEnd Time:  %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
