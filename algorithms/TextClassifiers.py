@@ -8,6 +8,7 @@ from sklearn.naive_bayes import BernoulliNB, MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neighbors import NearestCentroid
 from sklearn.ensemble import RandomForestClassifier
+from sklearn import svm
 
 
 def get_algorithm(**kwargs):
@@ -21,7 +22,8 @@ def get_algorithm(**kwargs):
         'ncentroid': 'Nearest Centroid',
         'mnb': 'MultinomialNB',
         'bernoulli': 'BernoulliNB',
-        'svc': 'LinearSVC'
+        'svc': 'LinearSVC',
+        'svm': 'SVM'
     }
 
     clf = 0
@@ -57,6 +59,8 @@ def get_algorithm(**kwargs):
         clf = BernoulliNB(**kwargs)
     elif algorithm == 'svc':
         clf = LinearSVC(**kwargs)
+    elif algorithm == 'svm':
+        clf = svm.SVC(**kwargs)
     else:
         print('Error: algorithm specified not included in the list. Use any parameter shown below:')
         print()
