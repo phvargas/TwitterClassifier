@@ -14,7 +14,7 @@ __date__ = 'Wed,  Nov 08, 2017 at 12:12:58'
 __email__ = 'pvargas@cs.odu.edu'
 
 
-def select_documents(filename, outfile, amount, corpus_size):
+def select_documents(givenfile, outfile, amount, corpus_size):
     """
     Parameters used in make_json:
        filename: path of filename where JSON file resides
@@ -36,12 +36,14 @@ def select_documents(filename, outfile, amount, corpus_size):
 
     print(random_index)
 
-    with open(filename, mode='r', encoding='utf-8') as json_file:
-        with open(outfile, "w", encoding='utf-8') as f_out:
+    code = 25360
+    # JSON file
+    """
+    #with open(givenfile, mode='r', encoding='utf-8') as json_file:
+    #    with open(outfile, "w", encoding='utf-8') as f_out:
             data = json.load(json_file)
 
             counter = 0
-            code = 20360
             for account in data:
                 for document in account['tweets']:
                     if counter in random_index:
@@ -49,6 +51,17 @@ def select_documents(filename, outfile, amount, corpus_size):
                         code += 1
                         f_out.write("%d\tN\t%s\n" % (code, document[0]))
                     counter += 1
+    """
+    # Text file
+    with open(givenfile, mode='r', encoding='utf-8') as text_file:
+        with open(outfile, "w", encoding='utf-8') as f_out:
+            counter = 0
+            for row in text_file:
+                if counter in random_index:
+                    print(counter, row.strip())
+                    code += 1
+                    f_out.write("%d\tN\t%s\n" % (code, row.strip()))
+                counter += 1
 
     return
 
