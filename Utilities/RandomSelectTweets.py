@@ -36,8 +36,9 @@ def select_documents(filename, outfile, amount, corpus_size):
 
     print(random_index)
 
-    with open(filename, mode='r', encoding='utf-8') as json_file:
-        with open(outfile, "w", encoding='utf-8') as f_out:
+    """
+    #with open(filename, mode='r', encoding='utf-8') as json_file:
+    #    with open(outfile, "w", encoding='utf-8') as f_out:
             data = json.load(json_file)
 
             counter = 0
@@ -49,6 +50,18 @@ def select_documents(filename, outfile, amount, corpus_size):
                         code += 1
                         f_out.write("%d\tN\t%s\n" % (code, document[0]))
                     counter += 1
+    print('Total number of documents:', counter)
+    """
+    counter = 0
+    code = 24860
+    with open(filename, mode='r', encoding='utf-8') as text_file:
+        with open(outfile, mode='w', encoding='utf-8') as f_out:
+            for document in text_file:
+                if counter in random_index:
+                    print(counter, document.strip())
+                    f_out.write("%d\tN\t%s\n" % (code, document.strip()))
+                    code += 1
+                counter += 1
 
     return
 

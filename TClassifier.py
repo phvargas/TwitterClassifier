@@ -299,7 +299,10 @@ if __name__ == '__main__':
     SGDClassifier params example:
     algorithm=sgd loss=modified_huber penalty=l2 alpha=1e-5 random_state=42 max_iter=5 tol=None
     
-    
+    SVM params example:
+    algorithm=svm C=1.0 cache_size=8000 class_weight=None coef0=0.0 degree=3
+        gamma=auto kernel=linear max_iter=-1 probability=True random_state=None
+        shrinking=True tol=0.001 verbose=False
     """
     algorithm = alg.get_algorithm(**params)
     if params:
