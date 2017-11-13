@@ -57,7 +57,7 @@ def plot_learning_curve(estimator, title, X, y, ylim=None, cv=None,
     if ylim is not None:
         plt.ylim(*ylim)
     plt.xlabel("Training examples")
-    plt.ylabel("Validation Score")
+    plt.ylabel("Score")
 
     print('Getting training score values ....')
     train_sizes, train_scores, test_scores = learning_curve(
@@ -85,7 +85,7 @@ def plot_learning_curve(estimator, title, X, y, ylim=None, cv=None,
 start = time()
 print('Starting Time: %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
 
-folder_model = '/data/harassment/dataset/wsdl_subj_golbeck/'
+folder_model = 'data/dataset/wsdl_subj_golbeck_5k/'
 dataset = load_files(folder_model, shuffle=False)
 
 stop_words = text.ENGLISH_STOP_WORDS.union(['https', 'http'])
@@ -96,8 +96,8 @@ X = count_vect.fit_transform(dataset.data)
 y = dataset.target
 
 
-#title = "Learning Curves (SGD algorithm / wsdl_subj_golbeck)"
-title = "Learning Curves (SVM algorithm / wsdl_subj_golbeck)\nkernel=linear"
+#title = "Learning Curves (SGD algorithm / wsdl_subj_golbeck_5k)"
+title = "Learning Curves (SVM algorithm / wsdl_subj_golbeck_5k)\nkernel=linear"
 # Cross validation with 100 iterations to get smoother mean test and train
 # score curves, each time with 20% data randomly selected as a validation set.
 n_splits = 100
