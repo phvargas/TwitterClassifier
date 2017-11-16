@@ -42,4 +42,4 @@ for term, freq in corpus_terms:
 print()
 print('term,freq,category')
 for key in sorted(term_freq, key=term_freq.get, reverse=True)[:50]:
-    print('%s,%d,no_harassment' % (key, term_freq[key]))
+    print('%s,%d,combined' % (key, term_freq[key]))

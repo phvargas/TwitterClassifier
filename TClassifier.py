@@ -21,7 +21,6 @@ from scipy.stats import sem
 from matplotlib import pyplot as plt
 from sklearn.externals import joblib
 
-
 """Build a twitter harassment classification model
 
 TClassifier takes as parameter the path where the working corpus resides, in order to train and validate its documents.
@@ -195,16 +194,18 @@ def classifier(harassment_data_folder, clf_alg):
     print()
     print("  {0} dataset size: {1}".format(title, len(dataset.data)))
     print("  test sample size: {0}".format(len(docs_test)))
-    print("  number of false positive + false negative: {0}  --->  {1:.0f}%".format(len(red_dots), len(red_dots)/len(docs_test) * 100))
+    print("  number of false positive + false negative: {0}  --->  {1:.0f}%".format(len(red_dots), len(red_dots) / len(
+        docs_test) * 100))
 
     print()
     print('Writing persistence model...')
     filename = 'models/' + title + '.pkl'
+    clf = clf.fit(dataset.data, dataset.target)
     joblib.dump(clf, filename)
 
     # preserve categories
     filename = 'models/' + title + '_category.pkl'
-    #joblib.dump(dataset.target_names, filename)
+    # joblib.dump(dataset.target_names, filename)
 
     # Print and plot the confusion matrix
     cm = metrics.confusion_matrix(y_test, predictions)
@@ -215,16 +216,16 @@ def classifier(harassment_data_folder, clf_alg):
     display_conf_table(cm, dataset.target_names)
 
     # plot scatter plot
-    #plt.scatter(blue_dots, blue_prob, label='true positive + true negative')
-    #plt.scatter(red_dots, red_prob, color='red', label='false positive + false negative')
-    #plt.title(title + " Predicted Category Probability")
-    #plt.xlabel("Tweet_index")
-    #plt.ylabel("Pr(category | tweet) * tweet_index")
-    #plt.legend()
+    # plt.scatter(blue_dots, blue_prob, label='true positive + true negative')
+    # plt.scatter(red_dots, red_prob, color='red', label='false positive + false negative')
+    # plt.title(title + " Predicted Category Probability")
+    # plt.xlabel("Tweet_index")
+    # plt.ylabel("Pr(category | tweet) * tweet_index")
+    # plt.legend()
 
-    #import matplotlib.pyplot as plt
-    #plt.matshow(cm)
-    #plt.show()
+    # import matplotlib.pyplot as plt
+    # plt.matshow(cm)
+    # plt.show()
 
     print('Test doc size:', len(docs_test))
     print(docs_test[0])
@@ -298,7 +299,7 @@ if __name__ == '__main__':
     """
     SGDClassifier params example:
     algorithm=sgd loss=modified_huber penalty=l2 alpha=1e-5 random_state=42 max_iter=5 tol=None
-    
+
     SVM params example:
     algorithm=svm C=1.0 cache_size=8000 class_weight=None coef0=0.0 degree=3
         gamma=auto kernel=linear max_iter=-1 probability=True random_state=None
@@ -314,6 +315,6 @@ if __name__ == '__main__':
         print('Example: python3 TClassifier.py /data/my_corpus algorithm=sdg')
 
     print('\nEnd Time:  %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
-    exec_time = time()-start
+    exec_time = time() - start
     print('Execution Time: %.2f seconds or %2.f minutes' % (exec_time, exec_time / 60))
 sys.exit(0)

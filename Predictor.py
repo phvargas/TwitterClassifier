@@ -6,6 +6,7 @@ from sklearn.datasets import load_files
 from time import strftime, localtime, time
 from matplotlib import pyplot as plt
 from sklearn.externals import joblib
+from sklearn.feature_extraction import text
 
 
 """
@@ -38,10 +39,14 @@ def predict(model, category_path, doc):
     # load category nomenclature into category object
     category = joblib.load(category_path)
 
+    print(category)
+    print(pipeline)
     print('\nLoading harassment dataset files....')
     dataset = load_files(doc, shuffle=False)
 
-    count_vect = CountVectorizer()
+    stop_words = text.ENGLISH_STOP_WORDS.union(['https', 'http'])
+
+    count_vect = CountVectorizer(analyzer='word', strip_accents='unicode', stop_words=stop_words)
     tfidf_transformer = TfidfTransformer()
     X_train_counts = count_vect.fit_transform(dataset.data)
 
@@ -156,13 +161,13 @@ if __name__ == '__main__':
         print('Usage: python3 Predictor.py <model_path> <cat_path> <doc_path>')
         sys.exit(-1)
 
-    if not os.path.isfile(path):
-        print('\nCould not find category file: ' % cat_path)
+    if not os.path.isfile(cat_path):
+        print('\nCould not find category file: %s' % cat_path)
         print('Usage: python3 Predictor.py <model_path> <cat_path> <doc_path>')
         sys.exit(-1)
 
     if not os.path.isdir(doc_path):
-        print('\nCould not find document: ' % doc_path)
+        print('\nCould not find document: %s' % doc_path)
         print('Usage: python3 Predictor.py <model_path> <cat_path> <doc_path>')
         sys.exit(-1)
 
