@@ -16,11 +16,11 @@ def add_code(in_filename, out_filename, counter):
 
     with open(in_filename, "r", encoding='iso-8859-1') as f_in:
         with open(out_filename, "w", encoding='iso-8859-1') as f_out:
-            f_out.write("ID\tCode\tTweet\n")
+            # f_out.write("ID\tCode\tTweet\n")
             for line in f_in:
-                counter += 1
                 print("%d\t%s" % (counter, line.strip()))
-                f_out.write("%d\t%s" % (counter, line))
+                f_out.write("%d\tH\t%s" % (counter, line))
+                counter += 1
 
     return
 
@@ -35,7 +35,7 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     if not os.path.isfile(sys.argv[1]):
-        print('\nCould not find file: %s', sys.argv[1])
+        print('\nCould not find file: %s' % sys.argv[1])
         print('Usage: python3 AddCode.py <Input_filename> <output_filename> <start_code>')
         sys.exit(-1)
 

@@ -3,7 +3,7 @@ import sys
 import os
 from sklearn.datasets import load_files
 from sklearn.feature_extraction import text
-from sklearn.feature_extraction.text import TfidfTransformer, CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
 
 if len(sys.argv) < 2:
     print('Usage: python3 getTerms.py <corpus_folder>')
@@ -24,8 +24,9 @@ dataset = load_files(folder, shuffle=False)
 
 print('Removing stopwords....')
 stop_words = text.ENGLISH_STOP_WORDS.union(['https', 'http'])
-count_vect = CountVectorizer(analyzer='word', strip_accents='unicode', stop_words=stop_words)
-tfidf_transformer = TfidfTransformer()
+
+token_pattern = '(?u)\\b\\w\\w+\\b|@|#[\w\d_]*'
+count_vect = CountVectorizer(strip_accents='unicode', stop_words=stop_words, token_pattern=token_pattern)
 
 print('Transforming documents to TFIDF representation ...')
 X = count_vect.fit_transform(dataset.data)

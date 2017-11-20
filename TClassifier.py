@@ -4,6 +4,8 @@ import re
 import numpy as np
 import plotly.offline as py
 import plotly.graph_objs as go
+from textblob import TextBlob
+from sklearn.feature_extraction import text
 import Utilities.ConvertDataType as conv
 import algorithms.TextClassifiers as alg
 from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer, CountVectorizer
@@ -87,9 +89,11 @@ def classifier(harassment_data_folder, clf_alg):
                                    gamma='auto', kernel='rbf', max_iter=-1, probability=True, random_state=None,
                                    shrinking=True, tol=0.001, verbose=False))
     """
+    stop_words = text.ENGLISH_STOP_WORDS.union(['https', 'http'])
 
+    token_pattern = '(?u)\\b\\w\\w+\\b|@|#[\w\d_]*'
     clf = Pipeline([
-        ('vect', TfidfVectorizer()),
+        ('vect', TfidfVectorizer(stop_words=stop_words, token_pattern=token_pattern)),
         ('tfidf', TfidfTransformer()),
         ('clf', clf_alg),
     ])
@@ -154,13 +158,15 @@ def classifier(harassment_data_folder, clf_alg):
 
     for x in range(len(predictions)):
         if predictions[x] != y_test[x]:
+            miss_doc = docs_test[x].decode(encoding)
+            sentiment = TextBlob(miss_doc)
             red_dots.append(x)
             counter += 1
-            """
-            print('<{0}> {1} => {2} file ==> {3}'.format(counter, docs_test[x].decode(encoding),
-                                                         dataset.target_names[y_predicted[x]],
-                                                         get_filename_sequence(test_filenames[x])))                                                         
-            """
+            print('<{0}> {1} => {2} file ==> {3} sent ==> {4:.2f}'.format(counter, miss_doc,
+                                                                          dataset.target_names[predictions[x]],
+                                                                          get_filename_sequence(test_filenames[x]),
+                                                                          sentiment.sentiment.polarity
+                                                                          ))
             tfidf_sum = sum(X_data[counter].toarray()[0])
 
             if tfidf_sum <= 2:
