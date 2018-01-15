@@ -71,6 +71,11 @@ def tweets(filename, **kwargs):   # handler is twitter user name without @ examp
         # save handle tweets
         data.append(json_obj)
 
+    f_out = open('ramos', mode='w')
+    for row in data[0]['tweets']:
+        f_out.write('{0}\n'.format(row[0]))
+    f_out.close()
+
     with open(filename, 'w') as out_file:
         json.dump(data, out_file, sort_keys=True, indent=4)
 
@@ -92,8 +97,12 @@ def retrieve_tweets(api, screen_name, count=200, max_id=None):
             tweet_block = api.GetUserTimeline(screen_name=screen_name, count=count,  max_id=max_id)
             have_to_wait = False
         except twitter.error.TwitterError as e:
+            print(screen_name, 'message:', e.message)
+            if e.message == 'Not authorized.' or 'Unknown error: ' in e.message or e.message[0]['code'] == 34:
+                print('Account deleted or not authorized... Moving on ... ')
+                return []
+
             print('We have to wait 15 mins.')
-            print(e)
             timeit.sleep(61 * 15)
 
     return tweet_block
