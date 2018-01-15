@@ -34,12 +34,11 @@ def make_json(filename):
             else:
                 idx = 0
                 for value in row:
-                    if json_title[idx] == 'name':
-                        json_row[json_title[idx]] = value
-                    elif json_title[idx] == 'handle':
-                        json_row[json_title[idx]] = value
+                    # if key is the name or handle DO NOT lower case value
+                    if json_title[idx].lower() == 'name' or json_title[idx].lower() == 'handle':
+                        json_row[json_title[idx].lower()] = value
                     else:
-                        json_row[json_title[idx]] = value.lower()
+                        json_row[json_title[idx].lower()] = value.lower()
 
                     idx += 1
 
@@ -48,11 +47,11 @@ def make_json(filename):
             print(', '.join(row))
 
     print(json.dumps(json_obj, sort_keys=True, indent=4))
-    fhs = open('out', 'w')
+    fhs = open('ConversationHarassment.dat', 'w')
     json.dump(json_obj, fhs, sort_keys=True, indent=4)
     fhs.close()
 
-    fhs = open('out', 'r')
+    fhs = open('ConversationHarassment.dat', 'r')
     test = json.load(fhs)
 
     print(test)
