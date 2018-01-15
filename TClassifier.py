@@ -79,7 +79,7 @@ def classifier(harassment_data_folder, clf_alg):
     k_fold = 10
     cv = KFold(k_fold, shuffle=True, random_state=None)
 
-    # build a vectorizer / classifier pipeline that filters out tokens that are too rare or too frequent
+    # build a vectorizer / classifier pipeline that filters ConversationHarassment.dat tokens that are too rare or too frequent
     """
     :parameter for SGDClassifier(loss='modified_huber', penalty='l2',
                                  alpha=1e-5, random_state=42,

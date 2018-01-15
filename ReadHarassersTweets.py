@@ -1,9 +1,8 @@
 import sys
 import os
-import pickle
+import re
+import gzip
 from time import strftime, localtime, time
-from twitter_apps.TwitterFunctions import TObject
-from twitter_apps.GetTweets import retrieve_tweets
 
 
 """
@@ -15,71 +14,42 @@ __date__ = 'Mon,  Dec 13, 2017 at 10:51'
 __email__ = 'pvargas@cs.odu.edu'
 
 
-def get_tweets(in_file, output_file):
+def get_tweets(in_file):
     """
-    :param in_file: pickle file containing twitter handle
-    :param output_file: output file containing max tweets allowed for ids in input file
+    :param in_file: file containing extracted tweets from harassers timeline
     :return: void
     """
-    pkl_file = open(in_file, 'rb')
-    followers_id = pickle.load(pkl_file)
-    pkl_file.close()
-
-    tObj = TObject()
-
-    # get all handles from research subject
-    max_count = 3200
-
+    regex = re.compile("(<<)(\\S+)(>>)")
     counter = 0
-    out_fhs = open(output_file, mode='w')
-    for account in followers_id:
-        print(account)
-        out_fhs.write('{}\n'.format(account))
-
-        # make initial request for most recent tweets (200 is the maximum allowed count)
-        new_tweets = retrieve_tweets(tObj.api, account)
-
-        # add new tweets to created json_oj
-        counter += len(new_tweets)
-
-        for my_tweets in new_tweets:
-            counter += 1
-            print(counter, my_tweets.text.replace("\n", ' '), my_tweets.created_at, my_tweets.id, len(new_tweets))
-            out_fhs.write('{}\n'.format(my_tweets.text.replace("\n", ' ')))
-
-        # save the id of the oldest tweet less one
-        if len(new_tweets) > 0:
-            oldest = new_tweets[-1].id - 1
-
-        # keep grabbing tweets until there are no tweets left to grab
-        while len(new_tweets) > 0:
-            # all subsequent requests use the max_id param to prevent duplicates
-            new_tweets = retrieve_tweets(tObj.api, account, max_count,  oldest)
-
-            counter += len(new_tweets)
-
-            # update the id of the oldest tweet less one
-            if len(new_tweets) > 0:
-                oldest = new_tweets[-1].id - 1
-
-            for my_tweets in new_tweets:
+    deleted_accounts = 0
+    bad_accounts = []
+    with gzip.open(in_file, mode='r') as fhs:
+        for record in fhs:
+            record = record.strip().decode('utf-8')
+            is_handle = regex.match(record)
+            if is_handle:
                 counter += 1
-                print(counter, my_tweets.text.replace("\n", ' '), my_tweets.created_at, my_tweets.id, len(new_tweets))
-                out_fhs.write('{}\n'.format(my_tweets.text.replace("\n", ' ')))
+                current_handle = is_handle.group(2)
+                handle_tweets = []
 
-        print()
-        out_fhs.write('\n')
+            elif record:
+                handle_tweets.append(record)
+            else:
+                if len(handle_tweets) == 0:
+                    print(counter, current_handle, len(handle_tweets), handle_tweets)
+                    deleted_accounts += 1
+                    bad_accounts.append(current_handle)
 
-    out_fhs.close()
+    print('\nNumber of harassers: {}'.format(counter))
+    print('\nNumber of deleted accounts: {}'.format(deleted_accounts))
+    print(bad_accounts)
 
     return
 
 
 if __name__ == '__main__':
     """
-    :param model_path: path and filename where model resides
-    :param cat_path: path and filename for category nomenclature
-    :param doc: path and filename where document resides       
+    :param input_file: file containing extracted tweets from harassers timeline    
     """
 
     # record running time
@@ -87,19 +57,18 @@ if __name__ == '__main__':
     print('Starting Time: %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
 
     # checks if path was passed as an argument
-    if len(sys.argv) < 3:
-        print('Usage: python3 HarasserTweets.py <input_file> <output_file>')
+    if len(sys.argv) < 2:
+        print('Usage: python3 ReadHarassersTweets.py <input_file>')
         sys.exit(-1)
 
     input_file = sys.argv[1]
-    out_file = sys.argv[2]
 
     if not os.path.isfile(input_file):
         print('\nCould not file: %s' % input_file)
-        print('Usage: python3 HarasserTweets.py <input_file> <output_file>')
+        print('Usage: python3 ReadHarassersTweets.py <input_file>')
         sys.exit(-1)
 
-    get_tweets(input_file, out_file)
+    get_tweets(input_file)
 
     print('\nEnd Time:  %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
     print('Execution Time: %.2f seconds' % (time()-start))

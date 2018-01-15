@@ -1,5 +1,6 @@
 import sys
 import os
+import re
 from time import strftime, localtime, time
 from sklearn.externals import joblib
 
@@ -20,6 +21,8 @@ def predict(model, category_path, doc):
     :param doc: path of document to be compared
     :return: void
     """
+    remove_tco = re.compile('https?:\\?\s?/\\?\s?/t.co\\?\s?/\S+')
+    remove_hdl = re.compile('@\S+')
 
     # load model into pipeline object
     pipeline = joblib.load(model)
@@ -32,6 +35,8 @@ def predict(model, category_path, doc):
     new_doc = []
     with open(doc, mode='r') as in_file:
         for record in in_file:
+            # record = remove_hdl.sub('@', record)
+            record = remove_tco.sub(' ', record)
             new_doc.append(record.strip())
 
     # predict the outcome on the testing set and store it in a variable named y_predicted
@@ -43,10 +48,10 @@ def predict(model, category_path, doc):
     for doc, cat in zip(new_doc, y_predicted):
         if cat == 0:
             harassment += 1
+
         else:
             no_harassment += 1
-
-        print(doc, '-->',  category[cat])
+            print(doc, '-->', category[cat])
 
     print()
     print('Total number of harassment documents -------> {:>7}'.format('{:,d}'.format(harassment)))
