@@ -53,7 +53,7 @@ def remove_records(in_filename, clean_file, out_filename):
 
                 except AttributeError:
                     print('error:', row.strip())
-                    #f_out.write(row)
+                    # f_out.write(row)
     print(codes)
     return
 
