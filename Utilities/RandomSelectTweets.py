@@ -53,7 +53,7 @@ def select_documents(filename, outfile, amount, corpus_size):
     print('Total number of documents:', counter)
     """
     counter = 0
-    code = 5000
+    code = 15001
     with open(filename, mode='r', encoding='utf-8') as text_file:
         with open(outfile, mode='w', encoding='utf-8') as f_out:
             for document in text_file:
