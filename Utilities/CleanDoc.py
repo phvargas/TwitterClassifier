@@ -12,18 +12,23 @@ remove all special characters but $,!,?,,@,# --> [^a-zA-Z0-9\.@#?'*%,=/:\(\)\s;_
 """
 
 
-def clean_doc(text):
-    regex = re.findall("htt.*:[\s+|\/][\s+|\/].*t.co.*\/\S+", text)
-    text = text.strip()
+def clean_doc(my_text):
+    print(my_text.strip())
+    regex = re.findall("htt.*:[\s+|\/][\s+|\/].*t.co.*\/\S+", my_text)
+    my_text = my_text.strip()
     for value in regex:
-        text = text.replace(value, '')
+        my_text = my_text.replace(value, '')
 
-    regex = re.findall("https?:\s?\/\s?\/t\.c?o?", text)
+    regex = re.findall("https?:\s?\/\s?\/t\.c?o?\s/?", my_text)
     for value in regex:
-        text = text.replace(value, '')
+        my_text = my_text.replace(value, '')
 
-    return text
+    regex = re.findall("@\S+", my_text)
+    for value in regex:
+        my_text = my_text.replace(value, '@hdl')
+
+    return my_text
 
 
-text = 'RT @yasmineryan: Sisi is worse than Netanyahu, &amp; the Egyptians are conspiring against us more than the Jews, #Gaza shopkeeper http: / /t.co'
+text = "RT @YasmineAlFarra: Edward Said on claims that #Palestine is the Jews' God Given Land http: / /t.co /wNRtRFaeni @georgegalloway"
 print(clean_doc(text))
