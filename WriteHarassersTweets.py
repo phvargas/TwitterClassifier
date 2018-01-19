@@ -9,7 +9,8 @@ from Utilities.CleanDoc import clean_doc
 """
     Given a set of files containing tweets from identified harasser Twitter account:
        1. identified deleted/suspended/private accounts
-       2.      
+       2. Collect tweets from identified accounts
+       3. Write tweet into a file
 """
 
 __author__ = 'Plinio H. Vargas'
