@@ -1,88 +1,50 @@
 import sys
 import os
 import re
-import gzip
 from time import strftime, localtime, time
+from Utilities.CleanDoc import clean_doc
+from Utilities.Sorting import dictionaryByValue
+from sklearn.feature_extraction import text
 
 
 """
-    Given a set of set of ids get max number of tweets.     
+    Given a set of files containing tweets from identified harasser Twitter account:
+       1. identified deleted/suspended/private accounts
+       2.      
 """
 
 __author__ = 'Plinio H. Vargas'
-__date__ = 'Mon,  Dec 13, 2017 at 10:51'
+__date__ = 'Mon,  Jan 19, 2018 at 10:51'
 __email__ = 'pvargas@cs.odu.edu'
 
 
-def inspect_all_files(folder_path):
-    vector_file = [
-        'HarasserTweets.20171219.gz',
-        'HarasserTweets.20171227.gz',
-        'HarasserTweets.20180104.gz',
-        'HarasserTweets.20180110.gz',
-        'HarasserTweets.20180113.gz',
-        'HarasserTweets.20180117.gz'
-    ]
+stop_words = text.ENGLISH_STOP_WORDS.union(['https', 'http', 'rt', '@hdl', '&amp'])
 
-    vector_set = []
 
-    for filename in vector_file:
-        filename = folder_path + '/' + filename
-        if not os.path.isfile(filename):
-            print('\nCould not find file: %s' % filename)
-            print('inspecting next file....')
-            break
-
-        vector_set.append(set(get_tweets(filename)))
-
-    for vector in vector_set:
-        print(len(vector), vector)
-
-    final_set = list(vector_set[-1] - vector_set[0])
-    tweets = get_handle_tweets(folder_path + "/" + vector_file[0], final_set)
-
-    for account in tweets:
-        print('<<{}>>'.format(account))
-        for tweet in tweets[account][:50]:
+def get_BOWD(in_file):
+    word_count = {}
+    accounts = get_tweets(in_file)
+    for tweets in accounts:
+        print('<<{}>>'.format(tweets))
+        for tweet in accounts[tweets]:
+            word_count = get_word_count(word_count, tweet.split())
             print('\t{}'.format(tweet))
-        print()
 
-    print(vector_set[-1])
-    print(vector_set[0])
-    print(list(vector_set[-1] - vector_set[0]))
+    for freq, value in dictionaryByValue(word_count):
+        print(freq, value)
+
+    print(stop_words)
     return
 
 
-def get_handle_tweets(in_file, handle_list):
-    regex = re.compile("(<<)(\\S+)(>>)")
-    valid_handle = False
-    handle = {}
+def get_word_count(obj, vector):
+    for word in vector:
+        if word not in stop_words and word not in obj:
+            obj[word] = 1
+        elif word not in stop_words:
+            obj[word] += 1
 
-    # iterate throughout the entire file
-    with gzip.open(in_file, mode='r') as fhs:
-        for record in fhs:
-            record = record.strip().decode('utf-8')
-            is_handle = regex.match(record)
-
-            # record read is handle's name
-            if is_handle:
-                current_handle = is_handle.group(2)
-                if current_handle in handle_list:
-                    valid_handle = True
-                    handle[current_handle] = []
-                else:
-                    valid_handle = False
-
-            # append tweet to current handle
-            elif record:
-                if valid_handle:
-                    handle[current_handle].append(record)
-
-            # empty value for handle
-            else:
-                pass
-
-    return handle
+    return obj
 
 
 def get_tweets(in_file):
@@ -92,37 +54,29 @@ def get_tweets(in_file):
     """
     regex = re.compile("(<<)(\\S+)(>>)")
     counter = 0
-    deleted_accounts = 0
-    bad_accounts = []
+    accounts = {}
 
     # iterate throughout the entire file
-    with gzip.open(in_file, mode='r') as fhs:
+    with open(in_file, mode='r') as fhs:
         for record in fhs:
-            record = record.strip().decode('utf-8')
+            record = record.strip()
             is_handle = regex.match(record)
 
             # record read is handle's name
             if is_handle:
                 counter += 1
                 current_handle = is_handle.group(2)
-                handle_tweets = []
+                accounts[current_handle] = []
 
             # append tweet to current handle
             elif record:
-                handle_tweets.append(record)
+                accounts[current_handle].append(clean_doc(record))
+                # accounts[current_handle].append(record)
 
             # empty value for handle
             else:
-                if len(handle_tweets) == 0:
-                    print(counter, current_handle, len(handle_tweets), handle_tweets)
-                    deleted_accounts += 1
-                    bad_accounts.append(current_handle)
-
-    print('\nNumber of harassers: {}'.format(counter))
-    print('\nNumber of deleted accounts: {}'.format(deleted_accounts))
-    print(bad_accounts)
-
-    return bad_accounts
+                pass
+    return accounts
 
 
 if __name__ == '__main__':
@@ -138,14 +92,14 @@ if __name__ == '__main__':
         print('\nProvide path of inspected files...')
         print('Usage: python3 ReadHarassersTweets.py <path>')
 
-    path = sys.argv[1]
+    filename = sys.argv[1]
 
-    if not os.path.isdir(path):
-        print('\nCould not find folder: %s' % path)
+    if not os.path.isfile(filename):
+        print('\nCould not find file: %s' % filename)
         print('Usage: python3 ReadHarassersTweets.py <path>')
         sys.exit(-1)
 
-    inspect_all_files(path)
+    get_BOWD(filename)
 
     print('\nEnd Time:  %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
     print('Execution Time: %.2f seconds' % (time()-start))
