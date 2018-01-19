@@ -27,6 +27,15 @@ def clean_doc(my_text):
     for value in regex:
         my_text = my_text.replace(value, '@hdl')
 
+    regex = re.compile("['.]")
+    my_text = regex.sub('', my_text)
+
+    regex = re.compile("[();:-]")
+    my_text = regex.sub(' ', my_text)
+
+    regex = re.compile("[^a-zA-Z0-9@#*%\(\)\s_&]")
+    my_text = regex.sub('', my_text.lower())
+
     return my_text
 
 
