@@ -37,7 +37,3 @@ def clean_doc(my_text):
     my_text = regex.sub('', my_text.lower())
 
     return my_text
-
-
-text = "RT @YasmineAlFarra: Edward Said on claims that #Palestine is the Jews' God Given Land http: / /t.co /wNRtRFaeni @georgegalloway"
-print(clean_doc(text))
