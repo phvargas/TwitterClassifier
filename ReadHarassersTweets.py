@@ -30,8 +30,13 @@ def get_BOWD(in_file):
             word_count = get_word_count(word_count, tweet.split())
             print('\t{}'.format(tweet))
 
+    fhs = open('harssers-zipt.dat', mode='w')
+    fhs.write('word\tvalue\n')
+
     for freq, value in dictionaryByValue(word_count):
         print(freq, value)
+        fhs.write('{}\t{}\n'.format(freq, value))
+    fhs.close()
 
     print(stop_words)
     return
@@ -91,6 +96,7 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         print('\nProvide path of inspected files...')
         print('Usage: python3 ReadHarassersTweets.py <path>')
+        sys.exit(-1)
 
     filename = sys.argv[1]
 
@@ -103,4 +109,4 @@ if __name__ == '__main__':
 
     print('\nEnd Time:  %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
     print('Execution Time: %.2f seconds' % (time()-start))
-sys.exit(0)
+    sys.exit(0)
