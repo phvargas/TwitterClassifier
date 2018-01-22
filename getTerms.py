@@ -35,12 +35,25 @@ corpus_terms = list(zip(count_vect.get_feature_names(), np.asarray(X.sum(axis=0)
 
 term_freq = {}
 counter = 0
+
 for term, freq in corpus_terms:
     counter += 1
     print(term, freq, counter)
     term_freq[term] = freq
 
 print()
+
 print('term,freq,category')
+
 for key in sorted(term_freq, key=term_freq.get, reverse=True)[:50]:
     print('%s,%d,combined' % (key, term_freq[key]))
+
+fhs = open('/home/hamar/data/odu/golbeck/tweets/zipt-data.dat', mode='w')
+fhs.write('word\tvalue\n')
+
+for key in sorted(term_freq, key=term_freq.get, reverse=True):
+    print('%s,%d,combined' % (key, term_freq[key]))
+    fhs.write('{}\t{}\n'.format(key, term_freq[key]))
+
+
+fhs.close()
