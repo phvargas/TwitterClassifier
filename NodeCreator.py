@@ -106,6 +106,11 @@ def read_conversations(in_filename):
     json.dump(screen_dict, f_out, indent=4)
     f_out.close()
 
+    data_dict = { "nodes": nodes, "links": links }
+    f_out = open('force_data.json', mode='w')
+    json.dump(data_dict, f_out, indent=4)
+    f_out.close()
+
     return
 
 
