@@ -19,15 +19,20 @@ def read_conversations(in_filename):
     nodes = []
     repliers_node = set()
 
+    # load conversations
     with open(in_filename, "r", encoding='iso-8859-1') as fs:
         for record in fs:
             conv = json.loads(record.strip())
-            print(conv)
+
+            # gets the Twitter Conversation-ID from the thread
             if conv:
                 conv_idx = next(iter(conv.values()))['data-conversation-id']
                 conv_dict[conv_idx] = []
+
             for idx in conv:
                 print('{}: {}'.format(idx, conv[idx]))
+
+                # place conversations-info into a dictionary
                 conv_dict[conv_idx].append({'data-tweet-id': conv[idx]['data-tweet-id'],
                                             'data-screen-name': conv[idx]['data-screen-name'],
                                             'tweet-time': conv[idx]['tweet-time'],
@@ -36,9 +41,9 @@ def read_conversations(in_filename):
 
                 for key in conv[idx]:
                     print('\t{}: {}'.format(key, conv[idx][key]))
-                    if key == 'data-conversation-id' and conv[idx][key] == idx:
-                        print('\t\tConversation originator: {}'.format(conv[idx]['data-screen-name']))
 
+                    # check if conversation-id is the root
+                    if key == 'data-conversation-id' and conv[idx][key] == idx:
                         # add screen_name to conversation initiated by research group member
                         if conv[idx]['data-screen-name'] in screen_dict:
                             screen_dict[conv[idx]['data-screen-name']]['conv'].append(conv_idx)
@@ -61,6 +66,10 @@ def read_conversations(in_filename):
                     else:
                         screen_dict[screen_name][screen_conv]['responds'] = [record]
 
+    # add nodes
+    nodes.append({"id": "0", "tweets": 0,
+                  "responses": 0
+                  })
     for screen_name in screen_dict:
         number_replies = 0
         for conversation in screen_dict[screen_name]:
@@ -71,19 +80,24 @@ def read_conversations(in_filename):
                     number_replies += conv_replies
 
                     for edge in screen_dict[screen_name][conversation]['responds']:
-                        links.append({"source": edge['data-screen-name'], "target": conversation,
-                                      "tweet": edge['tweet-text']})
+                        # links.append({"source": edge['data-screen-name'], "target": conversation,
+                        #               "tweet": edge['tweet-text']})
 
                         repliers_node.add(edge['data-screen-name'])
 
+                # conversations nodes
                 nodes.append({"id": conversation, "tweets": 1, "responses": conv_replies})
 
                 links.append({"source": screen_name, "target": conversation,
                               "tweet": screen_dict[screen_name][conversation]['tweet-text']})
 
+        # nodes of research group conversations
         nodes.append({"id": screen_name, "tweets": len(screen_dict[screen_name]) - 1,
                       "responses": number_replies
                       })
+
+        links.append({"source": "0", "target": screen_name,
+                      "tweet": ""})
 
     for link in links:
         print(link)
@@ -94,6 +108,8 @@ def read_conversations(in_filename):
     print('Number of repliers nodes:', len(repliers_node))
     print('Number of repliers edges:', len(links))
 
+    # nodes of Twitter handles interacting with research group conversations
+    """
     counter = 0
     for node in repliers_node:
         if node not in nodes:
@@ -101,6 +117,7 @@ def read_conversations(in_filename):
             nodes.append({"id": node, "tweets": -1, "responses": 0})
             if counter % 1000 == 0:
                 print(node, counter)
+    """
 
     f_out = open('conv_data_json.json', mode='w')
     json.dump(screen_dict, f_out, indent=4)
