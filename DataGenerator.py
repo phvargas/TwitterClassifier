@@ -35,6 +35,9 @@ def read_conversations(in_filename):
                     shaker_vector.append(node['responses'] / node['tweets'])
                     node_dict[node['id']] = {'responses': node['responses'], 'tweets': node['tweets'],
                                              'deleted-accounts': node['deleted-accounts'],
+                                             'closed-accounts': node['closed-accounts'],
+                                             'protected-accounts': node['protected-accounts'],
+                                             'suspended-accounts': node['suspended-accounts'],
                                              'stance': record['stance'], 'sex': record['sex']}
 
     max_value = max(shaker_vector)
@@ -44,9 +47,13 @@ def read_conversations(in_filename):
         data_points.add((shaker, node_dict[shaker]['responses'] / node_dict[shaker]['tweets'] / max_value,
                          node_dict[shaker]['sex'], node_dict[shaker]['stance'],
                          node_dict[shaker]['responses'], node_dict[shaker]['tweets'],
-                         node_dict[shaker]['deleted-accounts']
+                         node_dict[shaker]['deleted-accounts'],
+                         node_dict[shaker]['closed-accounts'],
+                         node_dict[shaker]['protected-accounts'],
+                         node_dict[shaker]['suspended-accounts'],
                          ))
 
+    print('(handle, shaker-ratio, sex, stance, responses, tweets, deleted, closed, protected, suspended)')
     for value in sorted(data_points, key=lambda x: x[1], reverse=True):
         print(value)
 

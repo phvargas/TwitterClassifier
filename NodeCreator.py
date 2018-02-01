@@ -20,19 +20,42 @@ def read_conversations(in_filename):
     links = []
     nodes = []
     repliers_node = set()
+
     deleted_accounts = []
+    closed_accounts = []
+    suspended_accounts = []
+    protected_accounts = []
 
     # upload deleted accounts
     with open('deleted_accounts.txt', mode='r') as fs_deleted:
         for account in fs_deleted:
             deleted_accounts.append(account.strip().lower())
 
+    # upload closed accounts
+    with open('closed_accounts.txt', mode='r') as fs_closed:
+        for account in fs_closed:
+            closed_accounts.append(account.strip().lower())
+
+    # upload suspended accounts
+    with open('suspended.txt', mode='r') as fs_suspended:
+        for account in fs_suspended:
+            suspended_accounts.append(account.strip().lower())
+
+    # upload protected accounts
+    with open('protected.txt', mode='r') as fs_protected:
+        for account in fs_protected:
+            protected_accounts.append(account.strip().lower())
+
     # load conversations
     with open(in_filename, "r", encoding='iso-8859-1') as fs:
         for record in fs:
             conv = json.loads(record.strip())
             conv_dict = {'responds': []}
+
             deleted_count = 0
+            protected_count = 0
+            suspended_count = 0
+            closed_count = 0
 
             # gets the Twitter Conversation-ID from the thread
             if conv:
@@ -60,6 +83,15 @@ def read_conversations(in_filename):
                     if conv[idx]['data-screen-name'].lower() in deleted_accounts:
                         deleted_count += 1
 
+                    if conv[idx]['data-screen-name'].lower() in protected_accounts:
+                        protected_count += 1
+
+                    if conv[idx]['data-screen-name'].lower() in closed_accounts:
+                        closed_count += 1
+
+                    if conv[idx]['data-screen-name'].lower() in suspended_accounts:
+                        suspended_count += 1
+
                     conv_dict['responds'].append({'data-tweet-id': conv[idx]['data-tweet-id'],
                                                   'data-screen-name': conv[idx]['data-screen-name'],
                                                   'tweet-time': conv[idx]['tweet-time'],
@@ -72,14 +104,20 @@ def read_conversations(in_filename):
                         'tweet-time': conv_dict['tweet-time'],
                         'tweet-text': conv_dict['tweet-text'],
                         'responds': conv_dict['responds'],
-                        'deleted-accounts': deleted_count
+                        'deleted-accounts': deleted_count,
+                        'suspended-accounts': suspended_count,
+                        'protected-accounts': protected_count,
+                        'closed-accounts': closed_count
                     }}
                 else:
                     screen_dict[conv_dict['data-screen-name']][conv_dict['data-conversation-id']] = {
                         'tweet-time': conv_dict['tweet-time'],
                         'tweet-text': conv_dict['tweet-text'],
                         'responds': conv_dict['responds'],
-                        'deleted-accounts': deleted_count
+                        'deleted-accounts': deleted_count,
+                        'suspended-accounts': suspended_count,
+                        'protected-accounts': protected_count,
+                        'closed-accounts': closed_count
                     }
 
     # add nodes
@@ -88,7 +126,11 @@ def read_conversations(in_filename):
                   })
     for screen_name in screen_dict:
         number_replies = 0
+
         deleted_count = 0
+        protected_count = 0
+        suspended_count = 0
+        closed_count = 0
 
         for conversation in screen_dict[screen_name]:
             conv_replies = 0
@@ -97,6 +139,9 @@ def read_conversations(in_filename):
                 conv_replies = len(screen_dict[screen_name][conversation]['responds'])
                 number_replies += conv_replies
                 deleted_count += screen_dict[screen_name][conversation]['deleted-accounts']
+                suspended_count += screen_dict[screen_name][conversation]['suspended-accounts']
+                protected_count += screen_dict[screen_name][conversation]['protected-accounts']
+                closed_count += screen_dict[screen_name][conversation]['closed-accounts']
 
                 for edge in screen_dict[screen_name][conversation]['responds']:
                     # links.append({"source": edge['data-screen-name'], "target": conversation,
@@ -112,7 +157,9 @@ def read_conversations(in_filename):
 
         # nodes of research group conversations
         nodes.append({"id": screen_name, "tweets": len(screen_dict[screen_name]),
-                      "responses": number_replies, 'deleted-accounts': deleted_count
+                      "responses": number_replies, 'deleted-accounts': deleted_count,
+                      'closed-accounts': closed_count, 'protected-accounts': protected_count,
+                      'suspended-accounts': suspended_count
                       })
 
         links.append({"source": "0", "target": screen_name,
