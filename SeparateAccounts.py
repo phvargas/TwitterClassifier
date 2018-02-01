@@ -1,5 +1,6 @@
 import re
 import requests
+from twitter_apps.Keys import get_password
 from requests.auth import HTTPBasicAuth
 
 """
@@ -19,7 +20,7 @@ open_account = []
 
 url = 'https://twitter.com/'
 user = 'FemalePHV'
-pwd = 'h@r@$$ment'
+pwd = get_password(user)
 
 regex_suspended = re.compile('<h1>Account suspended</h1>')
 regex_protected = re.compile("This account's Tweets are protected.")
