@@ -9,6 +9,8 @@ from twitter_apps.GetTweets import retrieve_tweets
 """
 This Python program
   1. Reads stored conversations from Twitter Research-Subjects
+  2. Finds nodes (handles) involved in Research-Subjects conversations
+  3. First time
 """
 __author__ = 'Plinio H. Vargas'
 __date__ = 'Tue,  Jan 25, 2018 at 11:30:24'
@@ -26,25 +28,29 @@ def read_conversations(in_filename):
     suspended_accounts = []
     protected_accounts = []
 
-    # upload deleted accounts
-    with open('deleted_accounts.txt', mode='r') as fs_deleted:
-        for account in fs_deleted:
-            deleted_accounts.append(account.strip().lower())
+    first_run = False
 
-    # upload closed accounts
-    with open('closed_accounts.txt', mode='r') as fs_closed:
-        for account in fs_closed:
-            closed_accounts.append(account.strip().lower())
+    if not first_run:
 
-    # upload suspended accounts
-    with open('suspended.txt', mode='r') as fs_suspended:
-        for account in fs_suspended:
-            suspended_accounts.append(account.strip().lower())
+        # upload deleted accounts
+        with open('deleted_accounts.txt', mode='r') as fs_deleted:
+            for account in fs_deleted:
+                deleted_accounts.append(account.strip().lower())
 
-    # upload protected accounts
-    with open('protected.txt', mode='r') as fs_protected:
-        for account in fs_protected:
-            protected_accounts.append(account.strip().lower())
+        # upload closed accounts
+        with open('closed_accounts.txt', mode='r') as fs_closed:
+            for account in fs_closed:
+                closed_accounts.append(account.strip().lower())
+
+        # upload suspended accounts
+        with open('suspended.txt', mode='r') as fs_suspended:
+            for account in fs_suspended:
+                suspended_accounts.append(account.strip().lower())
+
+        # upload protected accounts
+        with open('protected.txt', mode='r') as fs_protected:
+            for account in fs_protected:
+                protected_accounts.append(account.strip().lower())
 
     # load conversations
     with open(in_filename, "r", encoding='iso-8859-1') as fs:
@@ -131,6 +137,8 @@ def read_conversations(in_filename):
         protected_count = 0
         suspended_count = 0
         closed_count = 0
+        response_in_conversation = []
+        suspended_closed = []
 
         for conversation in screen_dict[screen_name]:
             conv_replies = 0
@@ -142,6 +150,9 @@ def read_conversations(in_filename):
                 suspended_count += screen_dict[screen_name][conversation]['suspended-accounts']
                 protected_count += screen_dict[screen_name][conversation]['protected-accounts']
                 closed_count += screen_dict[screen_name][conversation]['closed-accounts']
+                response_in_conversation.append(conv_replies)
+                suspended_closed.append(screen_dict[screen_name][conversation]['suspended-accounts'] +
+                                        screen_dict[screen_name][conversation]['closed-accounts'])
 
                 for edge in screen_dict[screen_name][conversation]['responds']:
                     # links.append({"source": edge['data-screen-name'], "target": conversation,
@@ -159,7 +170,8 @@ def read_conversations(in_filename):
         nodes.append({"id": screen_name, "tweets": len(screen_dict[screen_name]),
                       "responses": number_replies, 'deleted-accounts': deleted_count,
                       'closed-accounts': closed_count, 'protected-accounts': protected_count,
-                      'suspended-accounts': suspended_count
+                      'suspended-accounts': suspended_count, 'response-in-conversation': response_in_conversation,
+                      'suspended-closed': suspended_closed
                       })
 
         links.append({"source": "0", "target": screen_name,
@@ -188,7 +200,7 @@ def read_conversations(in_filename):
         if not retrieve_tweets(api, node, count=1):
             print(node, 'was deleted...')
             deleted_accounts.append(node)
-    
+
     with open('deleted_accounts.txt', mode='w') as fs_deleted:
         for node in deleted_accounts:
             fs_deleted.write('{}\n'.format(node))
@@ -215,6 +227,10 @@ def read_conversations(in_filename):
     json.dump(data_dict, f_out, indent=4)
     f_out.close()
 
+    with open('repliers_node_new.txt', mode='w') as fh_repliers:
+        for account in repliers_node:
+            fh_repliers.write('{}\n'.format(account))
+
     return
 
 
@@ -236,5 +252,5 @@ if __name__ == '__main__':
     read_conversations(sys.argv[1])
 
     print('\nEnd Time:  %s' % strftime("%a,  %b %d, %Y at %H:%M:%S", localtime()))
-    print('Execution Time: %.2f seconds' % (time()-start))
+    print('Execution Time: %.2f seconds' % (time() - start))
     sys.exit(0)
