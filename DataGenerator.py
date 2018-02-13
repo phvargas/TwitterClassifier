@@ -168,9 +168,19 @@ def read_conversations(in_filename):
 
     for tweet in liberal_vector:
         line += ',' + str(tweet)
-
     print(line)
+
     print(liberal_vector)
+
+    conservative_vector = np.zeros((max_conversation_size,), dtype=int)
+    liberal_vector = np.zeros((max_conversation_size,), dtype=int)
+    male_vector = np.zeros((max_conversation_size,), dtype=int)
+    female_vector = np.zeros((max_conversation_size,), dtype=int)
+
+    conservative_tweets = 0
+    liberal_tweets = 0
+    male_tweets = 0
+    female_tweets = 0
 
     print('\n\nDeleted tweets\n')
     print(header)
@@ -199,6 +209,27 @@ def read_conversations(in_filename):
                     )
 
                     k = len(node['suspended-closed']) - 1
+
+                    resize_vector = np.insert(sorted(node['suspended-closed'], reverse=True), k + 1,
+                                              np.zeros(max_conversation_size - k - 1))
+
+                    if record['stance'] == 'conservative':
+                        conservative_vector += resize_vector
+                        conservative_tweets += node['tweets']
+
+                    if record['stance'] == 'liberal':
+                        liberal_vector += resize_vector
+                        liberal_tweets += node['tweets']
+
+                    if record['sex'] == 'male':
+                        male_vector += resize_vector
+                        male_tweets += node['tweets']
+
+                    if record['sex'] == 'female':
+                        female_vector += resize_vector
+                        male_tweets += node['tweets']
+
+                    k = len(node['suspended-closed']) - 1
                     for i in range(k):
                         line += ',' + str(node['suspended-closed'][i])
 
@@ -207,6 +238,56 @@ def read_conversations(in_filename):
                         line += ','
 
                     print(line)
+
+    # get all deleted account in conservatives conversations
+    line = '{},{},{},{},{},{},{},{:.2f},{},{},{:.2f},{}:{},{},{},{},{}'.format(
+        'All',                          # Name
+        '0',                            # Followers
+        'conservative',                 # Stance
+        'NOTAPPL',                      # Sex
+        'del_conservatives',            # Handles
+        conservative_tweets,            # Tweets
+        sum(conservative_vector),       # Responses
+        np.std(conservative_vector),
+        max(conservative_vector),
+        min(conservative_vector),
+        sum(conservative_vector) / conservative_tweets,
+        Counter(conservative_vector).most_common()[0][0],
+        Counter(conservative_vector).most_common()[0][1],
+        '',                             # deleted-accounts
+        '',                             # closed-accounts
+        '',                             # protected-accounts
+        ''                              # suspended-accounts
+    )
+
+    for tweet in conservative_vector:
+        line += ',' + str(tweet)
+    print(line)
+
+    # get all deleted account in liberal conversations
+    line = '{},{},{},{},{},{},{},{:.2f},{},{},{:.2f},{}:{},{},{},{},{}'.format(
+        'All',                          # Name
+        '0',                            # Followers
+        'liberal',                      # Stance
+        'NOTAPPL',                      # Sex
+        'del_liberal',                  # Handles
+        liberal_tweets,                 # Tweets
+        sum(liberal_vector),       # Responses
+        np.std(liberal_vector),
+        max(liberal_vector),
+        min(liberal_vector),
+        sum(liberal_vector) / liberal_tweets,
+        Counter(liberal_vector).most_common()[0][0],
+        Counter(liberal_vector).most_common()[0][1],
+        '',                             # deleted-accounts
+        '',                             # closed-accounts
+        '',                             # protected-accounts
+        ''                              # suspended-accounts
+    )
+
+    for tweet in liberal_vector:
+        line += ',' + str(tweet)
+    print(line)
 
     max_value = max(shaker_vector)
 
