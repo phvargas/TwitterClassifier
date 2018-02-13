@@ -33,7 +33,7 @@ def read_conversations(in_filename):
     if not first_run:
 
         # upload deleted accounts
-        with open('deleted_accounts.txt', mode='r') as fs_deleted:
+        with open('data/deleted_accounts.txt', mode='r') as fs_deleted:
             for account in fs_deleted:
                 deleted_accounts.append(account.strip().lower())
 
@@ -153,6 +153,10 @@ def read_conversations(in_filename):
                 response_in_conversation.append(conv_replies)
                 suspended_closed.append(screen_dict[screen_name][conversation]['suspended-accounts'] +
                                         screen_dict[screen_name][conversation]['closed-accounts'])
+
+                if len(screen_dict[screen_name][conversation]['responds']) > 2:
+                    print(screen_dict[screen_name][conversation]['responds'])
+                    sys.exit(1)
 
                 for edge in screen_dict[screen_name][conversation]['responds']:
                     # links.append({"source": edge['data-screen-name'], "target": conversation,
