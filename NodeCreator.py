@@ -3,6 +3,7 @@ import os
 import json
 import twitter
 from time import strftime, localtime, time
+from itertools import groupby
 from twitter_apps.Keys import provide_keys
 from twitter_apps.GetTweets import retrieve_tweets
 
@@ -33,7 +34,7 @@ def read_conversations(in_filename):
     if not first_run:
 
         # upload deleted accounts
-        with open('data/deleted_accounts.txt', mode='r') as fs_deleted:
+        with open('deleted_accounts.txt', mode='r') as fs_deleted:
             for account in fs_deleted:
                 deleted_accounts.append(account.strip().lower())
 
@@ -151,14 +152,12 @@ def read_conversations(in_filename):
         response_in_conversation = []
         deleted_conversation_accounts = []
         accounts_in_conversation = []
+        accounts_frequency = []
 
         for conversation in screen_dict[screen_name]:
             conv_replies = 0
 
             if 'responds' in screen_dict[screen_name][conversation]:
-                print(screen_dict[screen_name][conversation])
-                print(screen_dict[screen_name][conversation]['deleted-conversation-accounts'])
-
                 conv_replies = len(screen_dict[screen_name][conversation]['responds'])
                 deleted_count += screen_dict[screen_name][conversation]['deleted-count']
                 suspended_count += screen_dict[screen_name][conversation]['suspended-count']
@@ -182,6 +181,13 @@ def read_conversations(in_filename):
 
             accounts_in_conversation.append({conversation: screen_dict[screen_name][conversation]['accounts-in-conversation']})
 
+            if screen_dict[screen_name][conversation]['accounts-in-conversation']:
+                a = sorted(screen_dict[screen_name][conversation]['accounts-in-conversation'])
+                accounts_frequency += [len(list(group)) for key, group in groupby(a)]
+            else:
+                accounts_frequency += [0]
+
+        accounts_frequency = sorted(accounts_frequency)
 
         # nodes of research group conversations
         nodes.append({"id": screen_name, "tweets": len(screen_dict[screen_name]),
@@ -189,15 +195,12 @@ def read_conversations(in_filename):
                       'closed-count': closed_count, 'protected-count': protected_count,
                       'suspended-count': suspended_count, 'response-in-conversation': response_in_conversation,
                       'suspended-closed': [len(x[list(x)[0]]) for x in deleted_conversation_accounts],
-                      'deleted_conversation_accounts': deleted_conversation_accounts
+                      'deleted_conversation_accounts': deleted_conversation_accounts,
+                      'account-frequency': [[x, accounts_frequency.count(x)] for x in set(accounts_frequency)]
                       })
 
         links.append({"source": "0", "target": screen_name,
                       "tweet": ""})
-
-    print(accounts_in_conversation)
-
-    sys.exit(1)
 
     for link in links:
         print(link)
@@ -248,6 +251,13 @@ def read_conversations(in_filename):
     f_out = open('force_data.json', mode='w')
     json.dump(data_dict, f_out, indent=4)
     f_out.close()
+
+    for node in nodes:
+        if 'response-in-conversation' in node:
+            print(node['id'])
+            print('Number of Accounts', 'Frequency')
+            for x, y in node['account-frequency']:
+                print(x, y)
 
     with open('repliers_node_new.txt', mode='w') as fh_repliers:
         for account in repliers_node:
