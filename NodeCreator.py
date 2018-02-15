@@ -3,6 +3,7 @@ import os
 import json
 import twitter
 from time import strftime, localtime, time
+import numpy as np
 from itertools import groupby
 from twitter_apps.Keys import provide_keys
 from twitter_apps.GetTweets import retrieve_tweets
@@ -34,7 +35,7 @@ def read_conversations(in_filename):
     if not first_run:
 
         # upload deleted accounts
-        with open('deleted_accounts.txt', mode='r') as fs_deleted:
+        with open('data/deleted_accounts.txt', mode='r') as fs_deleted:
             for account in fs_deleted:
                 deleted_accounts.append(account.strip().lower())
 
@@ -252,18 +253,38 @@ def read_conversations(in_filename):
     json.dump(data_dict, f_out, indent=4)
     f_out.close()
 
+    A = np.array([[1, 0]])
     for node in nodes:
         if 'response-in-conversation' in node:
             print(node['id'])
             print('Number of Accounts', 'Frequency')
+            A = sum_concat_matrix(A, np.array(node['account-frequency']))
             for x, y in node['account-frequency']:
                 print(x, y)
 
+    print('Total Frequency:')
+    print(A)
     with open('repliers_node_new.txt', mode='w') as fh_repliers:
         for account in repliers_node:
             fh_repliers.write('{}\n'.format(account))
 
     return
+
+
+def sum_concat_matrix(A, B):
+    counter = 0
+    for x in set(A.transpose()[0]).union(set(B.transpose()[0])):
+        if x not in A.transpose()[0]:
+            A = np.insert(A, [counter], [x, 0], axis=0)
+
+        if x not in B.transpose()[0]:
+            B = np.insert(B, [counter], [x, 0], axis=0)
+
+        counter += 1
+
+    A[:, 1] = A.transpose()[1] + B.transpose()[1]
+
+    return A
 
 
 if __name__ == '__main__':
