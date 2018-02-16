@@ -35,7 +35,7 @@ def read_conversations(in_filename):
     if not first_run:
 
         # upload deleted accounts
-        with open('data/deleted_accounts.txt', mode='r') as fs_deleted:
+        with open('deleted_accounts.txt', mode='r') as fs_deleted:
             for account in fs_deleted:
                 deleted_accounts.append(account.strip().lower())
 
