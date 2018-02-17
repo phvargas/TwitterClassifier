@@ -73,10 +73,10 @@ def read_conversations(in_filename):
                         np.average(node['response-in-conversation']),
                         Counter(node['response-in-conversation']).most_common()[0][0],
                         Counter(node['response-in-conversation']).most_common()[0][1],
-                        node['deleted-accounts'],
-                        node['closed-accounts'],
-                        node['protected-accounts'],
-                        node['suspended-accounts']
+                        node['deleted-count'],
+                        node['closed-count'],
+                        node['protected-count'],
+                        node['suspended-count']
                     )
 
                     k = len(node['response-in-conversation']) - 1
@@ -112,10 +112,10 @@ def read_conversations(in_filename):
                     shaker_vector.append(node['responses'] / node['tweets'])
 
                     node_dict[node['id']] = {'responses': node['responses'], 'tweets': node['tweets'],
-                                             'deleted-accounts': node['deleted-accounts'],
-                                             'closed-accounts': node['closed-accounts'],
-                                             'protected-accounts': node['protected-accounts'],
-                                             'suspended-accounts': node['suspended-accounts'],
+                                             'deleted-accounts': node['deleted-count'],
+                                             'closed-accounts': node['closed-count'],
+                                             'protected-accounts': node['protected-count'],
+                                             'suspended-accounts': node['suspended-count'],
                                              'stance': record['stance'], 'sex': record['sex'],
                                              'response-in-conversation': node['response-in-conversation']}
 
@@ -202,10 +202,10 @@ def read_conversations(in_filename):
                         np.average(node['response-in-conversation']),
                         Counter(node['response-in-conversation']).most_common()[0][0],
                         Counter(node['response-in-conversation']).most_common()[0][1],
-                        node['deleted-accounts'],
-                        node['closed-accounts'],
-                        node['protected-accounts'],
-                        node['suspended-accounts']
+                        node['deleted-count'],
+                        node['closed-count'],
+                        node['protected-count'],
+                        node['suspended-count']
                     )
 
                     k = len(node['suspended-closed']) - 1
