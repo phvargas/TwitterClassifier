@@ -67,6 +67,6 @@ for (k in names(final_value)){
                    " Followers=", followers)
   plot(sort(conv_vector, decreasing = TRUE), col=symbol_color,
        pch=pitch_symbol,
-       xlab="Conversation", ylab = "Deleted Accounts", main = g_title)
+       xlab="Conversation", ylab = "Deleted Tweets in Conversation", main = g_title)
 }
 
