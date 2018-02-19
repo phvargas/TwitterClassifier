@@ -207,8 +207,9 @@ class Conversation:
 
 
 from twitter_apps.Subjects import get_values
+import math
 
-observed = Conversation('/home/hamar/data/odu/golbeck/verifiedUserDataset/tweetConvo.dat')
+observed = Conversation('/data/harassment/verifiedUserDataset/tweetConvo.dat')
 
 my_deleted_list = []
 my_suspended_list = []
@@ -268,22 +269,60 @@ print('Number of handles in conversation:', len(observed.all_conversation_elemen
 """
 
 subjects_dict = {}
+stance_count = {}
+counter = 0
 
 for account in get_values():
     subjects_dict[account['handle'].lower()] = {'stance': account['stance']}
+    if account['stance'] not in stance_count:
+        stance_count[account['stance']] = 1
+    else:
+        stance_count[account['stance']] += 1
+
+for stance in stance_count:
+    print('{}:{}'.format(stance, stance_count[stance]))
 
 for harasser in my_suspended_deleted_list:
-    print(harasser)
     is_valid = False
+
+    account_appearance = []
+    stance_type = set()
+    intercepts = {}
+
     for account in observed.conversations:
-        presence = observed.handle_common_element_vector_count(account, [harasser])
-        if sum(presence):
-            print(account, subjects_dict[account.lower()], presence)
-            is_valid = True
+        presence = sum(observed.handle_common_element_vector_count(account, [harasser]))
+        if presence:
+            account_appearance.append('{} : {} -> appeared in {} conversations.'.format(account,
+                                                                                        subjects_dict[account.lower()],
+                                                                                        presence))
+            stance_type.add(subjects_dict[account.lower()]['stance'])
+
+            if subjects_dict[account.lower()]['stance'] not in intercepts:
+                intercepts[subjects_dict[account.lower()]['stance']] = 1
+            else:
+                intercepts[subjects_dict[account.lower()]['stance']] += 1
+
+            if len(account_appearance) > 1 and len(stance_type) > 1:
+                is_valid = True
 
     if is_valid:
-        print("-" * 80)
-        for tweet in observed.all_handle_tweets(harasser):
-            print('{:15} <- {}: {}'.format(tweet['handle'], tweet['data-conversation-id'],
-                                           tweet['tweet-text'].replace("\n", " ")))
-    print()
+        counter += 1
+        if ('liberal' in intercepts and 'conservative' in intercepts) and \
+           (intercepts['conservative'] != intercepts['liberal']):
+            print(harasser)
+            for row in account_appearance:
+                print(row)
+            print("-" * 80)
+            for tweet in observed.all_handle_tweets(harasser):
+                print('{:15} <- {}: {}'.format(tweet['handle'], tweet['data-conversation-id'],
+                                               tweet['tweet-text'].replace("\n", " ")))
+
+            po = 0
+
+            if 'conservative' in intercepts and 'liberal' in intercepts:
+                po = math.log2((intercepts['conservative'] * stance_count['liberal']) /
+                               (intercepts['liberal'] * stance_count['conservative']))
+            print('Political Orientation:', po)
+            print()
+
+print(counter)
