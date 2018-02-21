@@ -109,6 +109,7 @@ class Conversation:
         :param conversation_id: Twitter conversation-id number
         :return: a vector containing deleted tweet handles in a conversation. Ex: [Handle1, Handle2, Handle1]
         """
+
         if conversation_id not in self.conversations[handle]:
             return []
 
@@ -123,6 +124,7 @@ class Conversation:
         :param _list: elements comparing with a specific conversation for a given Twitter handle
         :return: a vector containing handles in the passed list and the conversation. Ex: [Handle1, Handle2, Handle1]
         """
+
         _common_elements = []
         accounts = self.conversation_elements_list(handle, conversation_id)
 
@@ -208,3 +210,26 @@ class Conversation:
                             })
 
         return _conversation_list
+
+    def handle_conversation_matrix(self, _handle, _element_list):
+        _conversation_id = []
+        _handle_count = {}
+
+        for _idx in self.handle_conversations_id(_handle):
+            _conversation_row = {_idx: self.common_elements_list(_handle, _idx, _element_list),
+                                 'id': _idx,
+                                 'count': {}}
+            for _account in _conversation_row[_idx]:
+                if _account in _conversation_row['count']:
+                    _conversation_row['count'][_account] += 1
+                else:
+                    _conversation_row['count'][_account] = 1
+
+                if _account in _handle_count:
+                    _handle_count[_account] += 1
+                else:
+                    _handle_count[_account] = 1
+
+            _conversation_id.append({_idx: _conversation_row['count']})
+
+        return _conversation_id, _handle_count
