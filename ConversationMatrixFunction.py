@@ -2,7 +2,7 @@ import numpy as np
 from Conversation import Conversation
 from twitter_apps.Subjects import get_values
 
-observed = Conversation('/data/harassment/verifiedUserDataset/tweetConvo.dat')
+observed = Conversation('/home/hamar/data/odu/golbeck/verifiedUserDataset/tweetConvo.dat')
 
 my_deleted_list = []
 my_suspended_list = []
@@ -29,31 +29,61 @@ for account in get_values():
     else:
         stance_count[account['stance']] += 1
 
+for idx in observed.handle_conversations_id('megynkelly'):
+    print(idx, observed.common_elements_list('megynkelly', idx, my_suspended_deleted_list))
+print()
+
 conversation_id = []
 handle_set = set()
 
+total = 0
 for idx in observed.handle_conversations_id('megynkelly'):
-    conversation_row = {idx: observed.common_elements_list('megynkelly', idx, my_deleted_list), 'count': {}}
+    conversation_row = {idx: observed.common_elements_list('megynkelly', idx, my_suspended_deleted_list),
+                        'id': idx,
+                        'count': {},
+                        'total': 0}
     for handle in conversation_row[idx]:
+        conversation_row['total'] += 1
+        total += 1
+
         if handle in conversation_row['count']:
             conversation_row['count'][handle] += 1
         else:
             conversation_row['count'][handle] = 1
 
         handle_set.add(handle)
+
     conversation_id.append(conversation_row)
+    print(conversation_row)
+    print()
+print(total)
 
 print(' ' * 20, end='')
 for handle in handle_set:
     print(handle, end=' - ')
+print()
 
+col_total = np.zeros(len(handle_set), dtype=int)
 for row in conversation_id:
-    print(row)
+    print(row['id'], end=' -')
 
-    """
+    k = 0
     for handle in handle_set:
-        if handle in row['count']:
-            print(row['count'][handle], end=' -')
+        if handle in row[row['id']]:
+            print(' {}'.format(row['count'][handle]), end='  - ')
+            col_total[k] += row['count'][handle]
         else:
-            print(' - 0 ')
-    """
+            print(' 0', end='  - ')
+
+        k += 1
+
+    print(row['total'])
+print(col_total)
+
+all_rows, all_keys = observed.handle_conversation_matrix('megynkelly', my_suspended_deleted_list)
+for row in all_rows:
+    key = list(row.keys())[0]
+    print(row[key])
+
+for key in all_keys:
+    print(key, all_keys[key])
