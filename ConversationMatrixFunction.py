@@ -2,7 +2,7 @@ import numpy as np
 from Conversation import Conversation
 from twitter_apps.Subjects import get_values
 
-observed = Conversation('/home/hamar/data/odu/golbeck/verifiedUserDataset/tweetConvo.dat')
+observed = Conversation('/data/harassment/verifiedUserDataset/tweetConvo.dat')
 
 my_deleted_list = []
 my_suspended_list = []
@@ -81,9 +81,30 @@ for row in conversation_id:
 print(col_total)
 
 all_rows, all_keys = observed.handle_conversation_matrix('megynkelly', my_suspended_deleted_list)
+z = []
+x = list(range(len(all_rows)))
+y = list(range(len(handle_set)))
+
 for row in all_rows:
+    z_row = []
     key = list(row.keys())[0]
-    print(row[key])
+    print(key, end=' -')
+    for handle in handle_set:
+        if handle in row[key]:
+            print(row[key][handle], end=' ')
+            z_row.append(row[key][handle])
+        else:
+            print(' 0 -', end='')
+            z_row.append(0)
+    print()
+    z.append(z_row)
 
 for key in all_keys:
     print(key, all_keys[key])
+
+print(z)
+print(x)
+print(y)
+
+print('Number of people in conversation:', len(handle_set))
+print('Number of conversations:', len(all_rows))
