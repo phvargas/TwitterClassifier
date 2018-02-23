@@ -1,8 +1,11 @@
 import numpy as np
 from Conversation import Conversation
 from twitter_apps.Subjects import get_values
+import plotly.graph_objs as go
+import plotly.figure_factory as ff
+import plotly
 
-observed = Conversation('/data/harassment/verifiedUserDataset/tweetConvo.dat')
+observed = Conversation('/home/hamar/data/odu/golbeck/verifiedUserDataset/tweetConvo.dat')
 
 my_deleted_list = []
 my_suspended_list = []
@@ -29,16 +32,19 @@ for account in get_values():
     else:
         stance_count[account['stance']] += 1
 
-for idx in observed.handle_conversations_id('megynkelly'):
-    print(idx, observed.common_elements_list('megynkelly', idx, my_suspended_deleted_list))
+current_handle = get_values(handle='TeamCavuto')[0]
+print(current_handle)
+
+for idx in observed.handle_conversations_id(current_handle['handle']):
+    print(idx, observed.common_elements_list(current_handle['handle'], idx, my_suspended_deleted_list))
 print()
 
 conversation_id = []
 handle_set = set()
 
 total = 0
-for idx in observed.handle_conversations_id('megynkelly'):
-    conversation_row = {idx: observed.common_elements_list('megynkelly', idx, my_suspended_deleted_list),
+for idx in observed.handle_conversations_id(current_handle['handle']):
+    conversation_row = {idx: observed.common_elements_list(current_handle['handle'], idx, my_suspended_deleted_list),
                         'id': idx,
                         'count': {},
                         'total': 0}
@@ -80,10 +86,10 @@ for row in conversation_id:
     print(row['total'])
 print(col_total)
 
-all_rows, all_keys = observed.handle_conversation_matrix('megynkelly', my_suspended_deleted_list)
+all_rows, all_keys = observed.handle_conversation_matrix(current_handle['handle'], my_suspended_deleted_list)
 z = []
-x = list(range(len(all_rows)))
-y = list(range(len(handle_set)))
+y = list(range(1, len(all_rows) + 1))
+x = list(range(1, len(handle_set) + 1))
 
 for row in all_rows:
     z_row = []
@@ -102,9 +108,71 @@ for row in all_rows:
 for key in all_keys:
     print(key, all_keys[key])
 
-print(z)
-print(x)
-print(y)
+for key, handle in zip(all_rows, handle_set):
+    print(list(key)[0], handle)
+
+# Display element name and atomic mass on hover
+hover = list(range(len(all_rows)))
+symbol = list(range(len(all_rows)))
+
+for k, conversation in zip(range(len(all_rows)), all_rows):
+    print(conversation)
+    hover[k] = ['Handle: ' + handle + '<br>' + 'Conversation: ' +
+                list(conversation)[0] + '<br>Tweets: ' + str(z[k][i]) for i, handle in zip(range(len(handle_set)), handle_set)]
+    symbol[k] = [' ' for i in range(len(handle_set))]
+    print(len(symbol[k]), symbol[k])
+    print(hover[k])
 
 print('Number of people in conversation:', len(handle_set))
 print('Number of conversations:', len(all_rows))
+
+
+trace = go.Heatmap(z=z,
+                   x=x,
+                   y=y, colorscale="Viridis")
+
+layout = go.Layout(
+    title=current_handle['name'],
+    xaxis=dict(
+        title='Handle in Conversation',
+        titlefont=dict(
+            family='Courier New, monospace',
+            size=18,
+            color='#7f7f7f'
+        )
+    ),
+    yaxis=dict(
+        title='Conversation ID',
+        titlefont=dict(
+            family='Courier New, monospace',
+            size=18,
+            color='#7f7f7f'
+        )
+    )
+)
+
+# Invert Matrices
+# hover = hover[::-1]
+
+print(len(z), len(symbol))
+
+data = [trace]
+fig = ff.create_annotated_heatmap(z, x=x, y=y, annotation_text=symbol, text=hover, hoverinfo='text',
+                                  colorscale="Viridis", showscale=True)
+
+fig.layout.title = current_handle['name']
+fig.layout.xaxis = dict(title='Handle in Conversation',
+                        titlefont=dict(
+                            family='Courier New, monospace',
+                            size=18,
+                            color='#7f7f7f'
+                        ))
+
+fig.layout.yaxis = dict(title='Conversation ID',
+                        titlefont=dict(
+                            family='Courier New, monospace',
+                            size=18,
+                            color='#7f7f7f'
+                        ))
+
+plotly.offline.plot(fig, filename='heatmap.html')
