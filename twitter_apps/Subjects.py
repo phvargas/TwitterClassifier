@@ -1485,7 +1485,7 @@ def get_values(**kwargs):
             {
                 "birth_year": "1958",
                 "followers": "554104",
-                "handle": "teamcavuto",
+                "handle": "TeamCavuto",
                 "id": "223970563",
                 "job": "anchor/ editor",
                 "join_date": "12/1/2010",
