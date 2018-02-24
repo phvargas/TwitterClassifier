@@ -43,7 +43,7 @@ class Conversation:
                                 break
 
                         if is_original_tweet:
-                            conversation_block['data-screen-name'] = loaded_conversation[_idx]['data-screen-name']
+                            conversation_block['data-screen-name'] = loaded_conversation[_idx]['data-screen-name'].lower()
                             conversation_block['tweet-time'] = loaded_conversation[_idx]['tweet-time']
                             conversation_block['tweet-text'] = loaded_conversation[_idx]['tweet-text']
                         else:
@@ -80,7 +80,7 @@ class Conversation:
                  Twitter handle.
                  Ex: ['891800580842246145', '891809774769254404', '924629283447955462', '914822313799045120']
         """
-        return [x for x in self.conversations[handle]]
+        return [x for x in self.conversations[handle.lower()]]
 
     def handle_total_responses(self, handle):
         """
@@ -110,10 +110,10 @@ class Conversation:
         :return: a vector containing deleted tweet handles in a conversation. Ex: [Handle1, Handle2, Handle1]
         """
 
-        if conversation_id not in self.conversations[handle]:
+        if conversation_id not in self.conversations[handle.lower()]:
             return []
 
-        return [x['data-screen-name'] for x in self.conversations[handle][conversation_id]['interactions']]
+        return [x['data-screen-name'] for x in self.conversations[handle.lower()][conversation_id]['interactions']]
 
     def common_elements_list(self, handle, conversation_id, _list):
         """
