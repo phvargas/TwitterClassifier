@@ -2,10 +2,11 @@ import numpy as np
 from Conversation import Conversation
 from twitter_apps.Subjects import get_values
 import plotly.graph_objs as go
-import plotly.figure_factory as ff
 import plotly
 
-observed = Conversation('/data/harassment/verifiedUserDataset/tweetConvo.dat')
+plotly.offline.init_notebook_mode(connected=True)
+
+observed = Conversation('/home/hamar/data/odu/golbeck/verifiedUserDataset/tweetConvo.dat')
 
 my_deleted_list = []
 my_suspended_list = []
@@ -32,115 +33,98 @@ for account in get_values():
     else:
         stance_count[account['stance']] += 1
 
-for record in get_values(handle='tuckercarlson'):
-    print(record)
-    current_handle = record
+max_density = 0
+handle_max_density = ''
+
+print(observed.handle_text_conversation_replies('iamsambee', '885869337063686144', 'camarogirl91'))
+print(len(observed.conversation_elements_set('tuckercarlson')))
+
+density_dict = {}
+
+for current_handle in get_values(handle='fredbarnes'):
     print(current_handle)
-
-    for idx in observed.handle_conversations_id(current_handle['handle']):
-        print(idx, observed.common_elements_list(current_handle['handle'], idx, my_suspended_deleted_list))
-    print()
-
     conversation_id = []
-    handle_set = set()
 
-    total = 0
-    for idx in observed.handle_conversations_id(current_handle['handle']):
-        conversation_row = {idx: observed.common_elements_list(current_handle['handle'], idx, my_suspended_deleted_list),
-                            'id': idx,
-                            'count': {},
-                            'total': 0}
-        for handle in conversation_row[idx]:
-            conversation_row['total'] += 1
-            total += 1
-
-            if handle in conversation_row['count']:
-                conversation_row['count'][handle] += 1
-            else:
-                conversation_row['count'][handle] = 1
-
-            handle_set.add(handle)
-
-        conversation_id.append(conversation_row)
-        print(conversation_row)
-        print()
-    print(total)
+    all_rows, all_handles = observed.handle_conversation_matrix(current_handle['handle'], my_suspended_deleted_list)
+    # all_rows, all_handles = observed.handle_conversation_matrix(current_handle['handle'],
+    #                                                            observed.conversation_elements_set(current_handle['handle']))
+    z = []
+    y = ['C' + str(k) for k in (range(1, len(all_rows) + 1))]
+    # y = [k for k in (range(1, len(all_rows) + 1))]
+    # y.insert(0, ' Total')
+    x = ['H'+str(k) for k in (range(1, len(all_handles) + 1))]
+    # x = [k for k in (range(1, len(all_handles) + 1))]
 
     print(' ' * 20, end='')
-    for handle in handle_set:
+    for handle in all_handles:
         print(handle, end=' - ')
     print()
-
-    col_total = np.zeros(len(handle_set), dtype=int)
-    for row in conversation_id:
-        print(row['id'], end=' -')
-
-        k = 0
-        for handle in handle_set:
-            if handle in row[row['id']]:
-                print(' {}'.format(row['count'][handle]), end='  - ')
-                col_total[k] += row['count'][handle]
-            else:
-                print(' 0', end='  - ')
-
-            k += 1
-
-        print(row['total'])
-    print(col_total)
-
-    all_rows, all_keys = observed.handle_conversation_matrix(current_handle['handle'], my_suspended_deleted_list)
-    z = []
-    y = list(range(1, len(all_rows) + 1))
-    x = list(range(1, len(handle_set) + 1))
 
     for row in all_rows:
         z_row = []
         key = list(row.keys())[0]
         print(key, end=' -')
-        for handle in handle_set:
+        for handle in all_handles:
             if handle in row[key]:
-                print(row[key][handle], end=' ')
+                print(' {}'.format(row[key][handle]), end='  - ')
                 z_row.append(row[key][handle])
             else:
-                print(' 0 -', end='')
+                print(' 0', end='  - ')
                 z_row.append(0)
         print()
+        # z_row.append(sum(z_row))
+
         z.append(z_row)
 
-    for key in all_keys:
-        print(key, all_keys[key])
+    area = len(all_handles) * len(all_rows)
+    try:
+        density = sum([all_handles[k] for k in all_handles]) / area * 100
 
-    for key, handle in zip(all_rows, handle_set):
-        print(list(key)[0], handle)
+    except ZeroDivisionError:
+        density = 0
 
-    # Display element name and atomic mass on hover
-    hover = list(range(len(all_rows)))
-    symbol = list(range(len(all_rows)))
+    print(z)
 
+    # add total to matrix
+    # z.insert(0, [all_handles[k] for k in all_handles])
+    print([sum(z[k]) for k in range(len(z))])
+    print([all_handles[k] for k in all_handles])
+    print('Area:', area)
+    print('Density: {:.2f}%'.format(density))
+
+    if max_density < density:
+        max_density = density
+        handle_max_density = current_handle['name']
+
+    density_dict[current_handle['handle']] = density
+
+    # Display handle and conversationID on hover
+    hover = list(range(len(all_rows) + 1))
+    symbol = list(range(len(all_rows) + 1))
+
+    # hover values for total
+    # hover[0] = ['Handle: ' + handle + '<br>Total Tweets:' + str(all_handles[k]) for k in all_handles]
     for k, conversation in zip(range(len(all_rows)), all_rows):
-        print(conversation)
-        hover[k] = ['Handle: ' + handle + '<br>' + 'Conversation: ' +
-                    list(conversation)[0] + '<br>Tweets: ' + str(z[k][i]) for i, handle in zip(range(len(handle_set)), handle_set)]
-        symbol[k] = [' ' for i in range(len(handle_set))]
-        print(len(symbol[k]), symbol[k])
-        print(hover[k])
+        hover[k] = ['Handle: ' + handle + '<br>' + 'Tweets: ' + str(z[k][i]) + ' of ' + str(all_handles[handle]) +
+                    '<br>Conversation: ' + list(conversation)[0] + '<br>Tweets: ' + str(z[k][i]) + ' of ' +
+                    str(sum(z[k])) for i, handle in zip(range(len(all_handles)), all_handles)]
 
-    print('Number of people in conversation:', len(handle_set))
+        symbol[k] = [' ' for i in range(len(all_handles))]
+
+    print('Number of people in conversation:', len(all_handles))
     print('Number of conversations:', len(all_rows))
 
-    if len(handle_set):
-        print(current_handle['name'])
-        trace = go.Heatmap(z=z,
-                           x=x,
-                           y=y, colorscale="Viridis")
-
+    if len(all_handles):
         layout = go.Layout(
-            title=current_handle['name'],
+            title='Deleted Accounts in ' + current_handle['name'] + ' Conversations<br>Deletion Density: ' +
+            # title='Tweets Accounts in ' + current_handle['name'] + ' Conversations<br>Tweet Density: ' +
+            '{:.2f}%'.format(density),
+            font=dict(family='Courier New, monospace', size=18, color='#7f7f7f'),
             xaxis=dict(
                 title='Conversation Handles',
                 titlefont=dict(
                     family='Courier New, monospace',
-                    size=18,
+                    size=16,
                     color='#7f7f7f'
                 )
             ),
@@ -148,34 +132,28 @@ for record in get_values(handle='tuckercarlson'):
                 title='Conversation IDX',
                 titlefont=dict(
                     family='Courier New, monospace',
-                    size=18,
+                    size=16,
                     color='#7f7f7f'
                 )
             )
         )
 
-        # Invert Matrices
-        # hover = hover[::-1]
+        data = [
+            go.Heatmap(
+                z=z,
+                x=x,
+                y=y,
+                # colorscale='Picnic',
+                colorscale='Viridis',
+                text=hover,
+                hoverinfo='text'
+            )
+        ]
 
-        print(len(z), len(symbol))
+        fig = go.Figure(data=data, layout=layout)
+        plotly.offline.plot(fig, filename='Plotly/' + current_handle['handle'] + 'deleted-mtx.html', auto_open=True)
+        # plotly.offline.plot(fig, filename='Plotly/' + current_handle['handle'] + 'tweet-mtx.html', auto_open=True)
 
-        data = [trace]
-        fig = ff.create_annotated_heatmap(z, x=x, y=y, annotation_text=symbol, text=hover, hoverinfo='text',
-                                          colorscale="Viridis", showscale=True)
-
-        fig.layout.title = 'Deleted Accounts in ' + current_handle['name'] + ' Conversations'
-        fig.layout.xaxis = dict(title='Conversation Handles',
-                                titlefont=dict(
-                                    family='Courier New, monospace',
-                                    size=18,
-                                    color='#7f7f7f'
-                                ))
-
-        fig.layout.yaxis = dict(title='Conversation IDX',
-                                titlefont=dict(
-                                    family='Courier New, monospace',
-                                    size=18,
-                                    color='#7f7f7f'
-                                ))
-
-        plotly.offline.plot(fig, filename='Plotly/' + current_handle['handle'] + '.html', auto_open=False)
+    print('Max density of all conversations: {:.2f}'.format(max_density))
+    print('Account with max density:', handle_max_density)
+    print('Tweet density vector:', density_dict)
