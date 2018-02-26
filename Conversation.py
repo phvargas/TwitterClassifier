@@ -164,7 +164,8 @@ class Conversation:
         """
         _conversation_handles = set()
 
-        for _conversation in self.conversations[handle]:
+        handle = handle.lower()
+        for _conversation in self.conversations[handle.lower()]:
             if self.conversations[handle][_conversation]['interactions']:
                 for _account in self.conversations[handle][_conversation]['interactions']:
                     _conversation_handles.add(_account['data-screen-name'].lower())
@@ -230,6 +231,17 @@ class Conversation:
                 else:
                     _handle_count[_account] = 1
 
-            _conversation_id.append({_idx: _conversation_row['count']})
+            if _conversation_row['count']:
+                _conversation_id.append({_idx: _conversation_row['count']})
 
         return _conversation_id, _handle_count
+
+    def handle_text_conversation_replies(self, _handle, _conversation_id, _handle_replying):
+        _replying_text = []
+
+        if _conversation_id in self.conversations[_handle]:
+            for _record in self.conversations[_handle][_conversation_id]['interactions']:
+                if _record['data-screen-name'].lower() == _handle_replying.lower():
+                    _replying_text.append(_record['tweet-text'])
+
+        return _replying_text
