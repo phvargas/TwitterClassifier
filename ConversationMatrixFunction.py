@@ -6,7 +6,7 @@ import plotly
 
 plotly.offline.init_notebook_mode(connected=True)
 
-observed = Conversation('/home/hamar/data/odu/golbeck/verifiedUserDataset/tweetConvo.dat')
+observed = Conversation('/data/harassment/verifiedUserDataset/tweetConvo.dat')
 
 my_deleted_list = []
 my_suspended_list = []
@@ -35,25 +35,30 @@ for account in get_values():
 
 max_density = 0
 handle_max_density = ''
+is_tweet_density = True
+appearance = {}
 
 print(observed.handle_text_conversation_replies('iamsambee', '885869337063686144', 'camarogirl91'))
 print(len(observed.conversation_elements_set('tuckercarlson')))
 
 density_dict = {}
 
-for current_handle in get_values(handle='fredbarnes'):
+for current_handle in get_values(handle='seanhannity'):
     print(current_handle)
     conversation_id = []
 
-    all_rows, all_handles = observed.handle_conversation_matrix(current_handle['handle'], my_suspended_deleted_list)
-    # all_rows, all_handles = observed.handle_conversation_matrix(current_handle['handle'],
-    #                                                            observed.conversation_elements_set(current_handle['handle']))
+    if is_tweet_density:
+        all_rows, all_handles = observed.handle_conversation_matrix(current_handle['handle'],
+                                                                    observed.conversation_elements_set(current_handle['handle']))
+    else:
+        all_rows, all_handles = observed.handle_conversation_matrix(current_handle['handle'], my_suspended_deleted_list)
+
     z = []
-    y = ['C' + str(k) for k in (range(1, len(all_rows) + 1))]
-    # y = [k for k in (range(1, len(all_rows) + 1))]
+    # y = ['C' + str(k) for k in (range(1, len(all_rows) + 1))]
+    y = [k for k in (range(1, len(all_rows) + 1))]
     # y.insert(0, ' Total')
-    x = ['H'+str(k) for k in (range(1, len(all_handles) + 1))]
-    # x = [k for k in (range(1, len(all_handles) + 1))]
+    # x = ['H'+str(k) for k in (range(1, len(all_handles) + 1))]
+    x = [k for k in (range(1, len(all_handles) + 1))]
 
     print(' ' * 20, end='')
     for handle in all_handles:
@@ -66,6 +71,11 @@ for current_handle in get_values(handle='fredbarnes'):
         print(key, end=' -')
         for handle in all_handles:
             if handle in row[key]:
+                if handle in appearance:
+                    appearance[handle] += 1
+                else:
+                    appearance[handle] = 1
+
                 print(' {}'.format(row[key][handle]), end='  - ')
                 z_row.append(row[key][handle])
             else:
@@ -105,23 +115,31 @@ for current_handle in get_values(handle='fredbarnes'):
     # hover values for total
     # hover[0] = ['Handle: ' + handle + '<br>Total Tweets:' + str(all_handles[k]) for k in all_handles]
     for k, conversation in zip(range(len(all_rows)), all_rows):
-        hover[k] = ['Handle: ' + handle + '<br>' + 'Tweets: ' + str(z[k][i]) + ' of ' + str(all_handles[handle]) +
+        hover[k] = ['Handle: ' + handle + '<br>' + 'Appeared: ' + str(appearance[handle]) +
+                    ' in ' + str(len(all_rows)) + ' conversations' +
                     '<br>Conversation: ' + list(conversation)[0] + '<br>Tweets: ' + str(z[k][i]) + ' of ' +
                     str(sum(z[k])) for i, handle in zip(range(len(all_handles)), all_handles)]
 
         symbol[k] = [' ' for i in range(len(all_handles))]
+        print(k)
 
     print('Number of people in conversation:', len(all_handles))
     print('Number of conversations:', len(all_rows))
 
+    if is_tweet_density:
+        title = 'Tweets Accounts in ' + current_handle['name'] + ' Conversations<br>Tweet Density: '
+        colorscale = 'Picnic'
+    else:
+        title = 'Deleted Accounts in ' + current_handle['name'] + ' Conversations<br>Deletion Density: '
+        colorscale = 'Viridis'
+
     if len(all_handles):
         layout = go.Layout(
-            title='Deleted Accounts in ' + current_handle['name'] + ' Conversations<br>Deletion Density: ' +
-            # title='Tweets Accounts in ' + current_handle['name'] + ' Conversations<br>Tweet Density: ' +
+            title=title +
             '{:.2f}%'.format(density),
             font=dict(family='Courier New, monospace', size=18, color='#7f7f7f'),
             xaxis=dict(
-                title='Conversation Handles',
+                title='Handles',
                 titlefont=dict(
                     family='Courier New, monospace',
                     size=16,
@@ -143,16 +161,18 @@ for current_handle in get_values(handle='fredbarnes'):
                 z=z,
                 x=x,
                 y=y,
-                # colorscale='Picnic',
-                colorscale='Viridis',
+                colorscale=colorscale,
                 text=hover,
                 hoverinfo='text'
             )
         ]
 
         fig = go.Figure(data=data, layout=layout)
-        plotly.offline.plot(fig, filename='Plotly/' + current_handle['handle'] + 'deleted-mtx.html', auto_open=True)
-        # plotly.offline.plot(fig, filename='Plotly/' + current_handle['handle'] + 'tweet-mtx.html', auto_open=True)
+
+        if is_tweet_density:
+            plotly.offline.plot(fig, filename='Plotly/' + current_handle['handle'] + 'tweet-mtx.html', auto_open=True)
+        else:
+            plotly.offline.plot(fig, filename='Plotly/' + current_handle['handle'] + 'deleted-mtx.html', auto_open=True)
 
     print('Max density of all conversations: {:.2f}'.format(max_density))
     print('Account with max density:', handle_max_density)
