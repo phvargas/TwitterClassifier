@@ -6,7 +6,7 @@ import plotly
 
 plotly.offline.init_notebook_mode(connected=True)
 
-observed = Conversation('/data/harassment/verifiedUserDataset/tweetConvo.dat')
+observed = Conversation('/home/hamar/data/odu/golbeck/verifiedUserDataset/tweetConvo.dat')
 
 my_deleted_list = []
 my_suspended_list = []
@@ -128,7 +128,10 @@ for current_handle in get_values(handle='seanhannity'):
 
     if is_tweet_density:
         title = 'Tweets Accounts in ' + current_handle['name'] + ' Conversations<br>Tweet Density: '
-        colorscale = 'Picnic'
+        # colorscale = 'Picnic'
+        colorscale = [[0.0, 'rgb(255,255,255)'], [0.1111111111111111, 'rgb(166,189,219)'],
+                      [0.222222222, 'rgb(43,140,190)'], [0.3333333333, 'rgb(252,146,114)'],
+                      [1, 'rgb(255,0,0)']]
     else:
         title = 'Deleted Accounts in ' + current_handle['name'] + ' Conversations<br>Deletion Density: '
         colorscale = 'Viridis'
