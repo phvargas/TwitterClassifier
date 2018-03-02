@@ -6,7 +6,7 @@ import plotly
 
 # plotly.offline.init_notebook_mode(connected=True)
 
-observed = Conversation('/home/hamar/data/odu/golbeck/verifiedUserDataset/tweetConvo.dat')
+observed = Conversation('/data/harassment/verifiedUserDataset/tweetConvo.dat')
 
 my_deleted_list = []
 my_suspended_list = []
@@ -49,7 +49,7 @@ total_number_conversations = 0
 total_number_appearance_conversation = 0
 total_appearance_across_conversation = 0
 
-for current_handle in get_values(handle='iamsambee'):
+for current_handle in get_values(handle='seanhannity'):
     print(current_handle)
     conversation_id = []
 
@@ -113,10 +113,11 @@ for current_handle in get_values(handle='iamsambee'):
     symbol = list(range(len(all_rows) + 1))
 
     max_single_tweet = 0
-    max_conversation_tweet = 0
-    max_appearance_number = 0
+    max_tweets_in_conversation = 0
+    max_handles_in_conversation = 0
     account_number_tweets = 0
-    appearance_in_conversations = 0
+    handles_in_conversations = 0
+    single_tweet_set = set()
     k_max = {}
 
     for k, conversation in zip(range(len(all_rows)), all_rows):
@@ -127,25 +128,33 @@ for current_handle in get_values(handle='iamsambee'):
 
         symbol[k] = [' ' for i in range(len(all_handles))]
 
+        single_tweet_set = single_tweet_set.union(set(z[k]))
+
         if max_single_tweet < max(z[k]):
             max_single_tweet = max(z[k])
-            k_max['single-tweet'] = list(all_handles)[k]
+            idx = z[k].index(max(z[k]))
+            k_max['single-tweet'] = set([list(all_handles)[idx]])
+        elif max_single_tweet == max(z[k]):
+            idx = z[k].index(max(z[k]))
+            k_max['single-tweet'].add(list(all_handles)[idx])
 
-        if max_conversation_tweet < sum(z[k]):
-            max_conversation_tweet = sum(z[k])
+        if max_tweets_in_conversation < sum(z[k]):
+            max_tweets_in_conversation = sum(z[k])
             k_max['conversation-tweet'] = list(conversation)[0]
+            k_max['conversation-tweet-count'] = max_tweets_in_conversation
 
-        if max_appearance_number < np.count_nonzero(z[k]):
-            max_appearance_number = np.count_nonzero(z[k])
+        if max_handles_in_conversation < np.count_nonzero(z[k]):
+            max_handles_in_conversation = np.count_nonzero(z[k])
             k_max['conversation-appearance'] = list(conversation)[0]
+            k_max['conversation-appearance-count'] = max_handles_in_conversation
 
         account_number_tweets += sum(z[k])
-        appearance_in_conversations += np.count_nonzero(z[k])
+        handles_in_conversations += np.count_nonzero(z[k])
 
         print(max(z[k]), sum(z[k]), np.count_nonzero(z[k]))
 
     total_number_tweets += account_number_tweets
-    total_number_appearance_conversation += appearance_in_conversations
+    total_number_appearance_conversation += handles_in_conversations
 
     number_handles = len(all_handles)
     total_number_handles += number_handles
@@ -156,13 +165,11 @@ for current_handle in get_values(handle='iamsambee'):
     print('Number of people in conversation:', number_handles)
     print('Number of conversations:', number_conversations)
     print('Hndl_Tweets_Conv: {}, Tweets-in-Conv: {}, Number Handle in Convers: {}'.format(max_single_tweet,
-                                                                                          max_conversation_tweet,
-                                                                                          max_appearance_number))
+                                                                                          max_tweets_in_conversation,
+                                                                                          max_handles_in_conversation))
     print('Ave Handl Tweets Conv: {:.2f}, Ave Tweets in Conv: {:.2f}'.format(account_number_tweets / number_handles,
                                                                              account_number_tweets / number_conversations))
-    print('Ave Number Handles in Conv: {:.2f}'.format(appearance_in_conversations / number_conversations))
-
-    print(k_max)
+    print('Ave Number Handles in Conv: {:.2f}'.format(handles_in_conversations / number_conversations))
 
     z_t = np.transpose(z)
 
@@ -177,13 +184,18 @@ for current_handle in get_values(handle='iamsambee'):
 
         if max_appearance_across_conversations < np.count_nonzero(z_t[k]):
             max_appearance_across_conversations = np.count_nonzero(z_t[k])
+            k_max['tweets-across'] = set([list(all_handles)[k]])
+        if max_appearance_across_conversations == np.count_nonzero(z_t[k]):
+            k_max['tweets-across'].add(list(all_handles)[k])
 
         appearance_across_conversations += np.count_nonzero(z_t[k])
     total_appearance_across_conversation += appearance_across_conversations
 
+    print(k_max)
     print('Handle-Tweets Across Conv: {}, '.format(max_tweets_across_conversations) +
           'Handle\'s Appearance Across Conversation: {}'.format(max_appearance_across_conversations))
     print('Ave. Appearance Across Conversations: {:.2f}'.format(appearance_across_conversations / number_handles))
+    print('List of max number of tweets:', sorted(list(single_tweet_set), reverse=True)[:3])
 
     """
 
