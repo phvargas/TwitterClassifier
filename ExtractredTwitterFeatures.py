@@ -49,7 +49,7 @@ total_number_conversations = 0
 total_number_appearance_conversation = 0
 total_appearance_across_conversation = 0
 
-for current_handle in get_values():
+for current_handle in get_values(handle='iamsambee'):
     print(current_handle)
     conversation_id = []
 
@@ -117,6 +117,7 @@ for current_handle in get_values():
     max_appearance_number = 0
     account_number_tweets = 0
     appearance_in_conversations = 0
+    k_max = {}
 
     for k, conversation in zip(range(len(all_rows)), all_rows):
         hover[k] = ['Handle: ' + handle + '<br>' + 'Appeared: ' + str(appearance[handle]) +
@@ -128,12 +129,15 @@ for current_handle in get_values():
 
         if max_single_tweet < max(z[k]):
             max_single_tweet = max(z[k])
+            k_max['single-tweet'] = list(all_handles)[k]
 
         if max_conversation_tweet < sum(z[k]):
             max_conversation_tweet = sum(z[k])
+            k_max['conversation-tweet'] = list(conversation)[0]
 
         if max_appearance_number < np.count_nonzero(z[k]):
             max_appearance_number = np.count_nonzero(z[k])
+            k_max['conversation-appearance'] = list(conversation)[0]
 
         account_number_tweets += sum(z[k])
         appearance_in_conversations += np.count_nonzero(z[k])
@@ -157,6 +161,8 @@ for current_handle in get_values():
     print('Ave Handl Tweets Conv: {:.2f}, Ave Tweets in Conv: {:.2f}'.format(account_number_tweets / number_handles,
                                                                              account_number_tweets / number_conversations))
     print('Ave Number Handles in Conv: {:.2f}'.format(appearance_in_conversations / number_conversations))
+
+    print(k_max)
 
     z_t = np.transpose(z)
 
