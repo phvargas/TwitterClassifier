@@ -6,7 +6,7 @@ import plotly
 
 plotly.offline.init_notebook_mode(connected=True)
 
-observed = Conversation('/data/harassment/verifiedUserDataset/tweetConvo.dat')
+observed = Conversation('/home/hamar/data/odu/golbeck/verifiedUserDataset/tweetConvo.dat')
 
 my_deleted_list = []
 my_suspended_list = []
@@ -68,35 +68,32 @@ y = [value for key, value in dictionaryByValue(deleted_data)]
 text = [subjects_dict[key] + '<br>Deleted:' + str(deleted_amount[key]) for key, value in dictionaryByValue(deleted_data)]
 
 for k, (key, value) in zip(range(1, len(deleted_data) + 1), dictionaryByValue(deleted_data)):
-    print(key, value)
     check = int(deleted_amount[key])
     if check <= 25:
-        print('I am below 25', deleted_amount[key])
         x0.append(k)
         y0.append(value)
         text0.append(subjects_dict[key] + '<br>Deleted:' + str(deleted_amount[key]))
+
     elif check <= 50:
-        print('I am below 50', deleted_amount[key])
         x1.append(k)
         y1.append(value)
         text1.append(subjects_dict[key] + '<br>Deleted:' + str(deleted_amount[key]))
+
     elif check <= 75:
-        print('I am below 75', deleted_amount[key])
         x2.append(k)
         y2.append(value)
         text2.append(subjects_dict[key] + '<br>Deleted:' + str(deleted_amount[key]))
+
     elif check <= 125:
-        print('I am below 125', deleted_amount[key])
         x3.append(k)
         y3.append(value)
         text3.append(subjects_dict[key] + '<br>Deleted:' + str(deleted_amount[key]))
+
     elif check <= 175:
-        print('I am below 175', deleted_amount[key])
         x4.append(k)
         y4.append(value)
         text4.append(subjects_dict[key] + '<br>Deleted:' + str(deleted_amount[key]))
     else:
-        print('I am above 176', deleted_amount[key])
         x5.append(k)
         y5.append(value)
         text5.append(subjects_dict[key] + '<br>Deleted:' + str(deleted_amount[key]))
@@ -106,7 +103,7 @@ print(len(x0), len(x1), len(x2), len(x3), len(x4), len(x5))
 trace0 = go.Scatter(
         x=x0,
         y=y0,
-        name='0 - 24',
+        name='0 - 25',
         text=text0,
         mode='markers',
         marker=dict(
@@ -118,7 +115,7 @@ trace0 = go.Scatter(
 trace1 = go.Scatter(
         x=x1,
         y=y1,
-        name='25 - 49',
+        name='26 - 50',
         text=text1,
         mode='markers',
         marker=dict(
@@ -130,7 +127,7 @@ trace1 = go.Scatter(
 trace2 = go.Scatter(
             x=x2,
             y=y2,
-            name='50 - 74',
+            name='51 - 75',
             text=text2,
             mode='markers',
             marker=dict(
@@ -142,7 +139,7 @@ trace2 = go.Scatter(
 trace3 = go.Scatter(
         x=x3,
         y=y3,
-        name='75 - 124',
+        name='76 - 125',
         text=text3,
         mode='markers',
         marker=dict(
@@ -151,10 +148,10 @@ trace3 = go.Scatter(
         )
     )
 
-trace4 =go.Scatter(
+trace4 = go.Scatter(
         x=x4,
         y=y4,
-        name='125 - 174',
+        name='126 - 175',
         text=text4,
         mode='markers',
         marker=dict(
