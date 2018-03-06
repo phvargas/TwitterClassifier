@@ -80,13 +80,6 @@ for current_handle in get_values():
 
         z.append(z_row)
 
-    area = len(all_handles) * len(all_rows)
-    try:
-        density = sum([all_handles[k] for k in all_handles]) / area * 100
-
-    except ZeroDivisionError:
-        density = 0
-
     print([sum(z[k]) for k in range(len(z))])
     print([all_handles[k] for k in all_handles])
 
