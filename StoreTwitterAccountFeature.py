@@ -3,7 +3,7 @@ import pickle
 from Conversation import Conversation
 from twitter_apps.Subjects import get_values
 
-observed = Conversation('/data/harassment/verifiedUserDataset/tweetConvo.dat')
+observed = Conversation('/home/hamar/data/odu/golbeck/verifiedUserDataset/tweetConvo.dat')
 
 my_deleted_list = []
 my_suspended_list = []
