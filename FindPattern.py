@@ -86,6 +86,11 @@ for count, handle in sorted(summary, reverse=True):
 print('Number of interacting handles', len(interacting_handles))
 print(deleted_interaction[:50])
 
+with open('data/interacting_handles.dat', mode='w') as fout:
+    for handle in interacting_handles:
+        fout.write('{}\n'.format(handle))
+
+fout.close()
 
 trace = go.Scatter(
         x=x_non_deleted,
