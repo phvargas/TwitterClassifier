@@ -63,32 +63,31 @@ text_deleted_tweets = []
 
 counter = 0
 
-for count, handle in sorted(summary, reverse=True):
-    counter += 1
-    if handle in my_suspended_deleted_list:
-        tweet_count = 0
-        for tweet in interactions[handle]:
-            account, value = list(tweet.items())[0]
-            tweet_count += value
+with open('data/interacting_handles.dat', mode='w') as fout:
+    for count, handle in sorted(summary, reverse=True):
+        counter += 1
+        if handle in my_suspended_deleted_list:
+            tweet_count = 0
+            for tweet in interactions[handle]:
+                account, value = list(tweet.items())[0]
+                tweet_count += value
 
-        #print('Username: {}, Number appearing: {}, Total Tweets: {}'.format(handle, count, tweet_count))
-        deleted_interaction.append((count, tweet_count, handle))
+            #print('Username: {}, Number appearing: {}, Total Tweets: {}'.format(handle, count, tweet_count))
+            deleted_interaction.append((count, tweet_count, handle))
 
-        x_deleted.append(counter)
-        y_deleted.append(count)
-        text_deleted.append(handle)
+            x_deleted.append(counter)
+            y_deleted.append(count)
+            text_deleted.append(handle)
+            fout.write('{},{},{}\n'.format(handle, count, 'D'))
 
-    else:
-        x_non_deleted.append(counter)
-        y_non_deleted.append(count)
-        text_non_deleted.append(handle)
+        else:
+            x_non_deleted.append(counter)
+            y_non_deleted.append(count)
+            text_non_deleted.append(handle)
+            fout.write('{},{},{}\n'.format(handle, count, 'N'))
 
 print('Number of interacting handles', len(interacting_handles))
 print(deleted_interaction[:50])
-
-with open('data/interacting_handles.dat', mode='w') as fout:
-    for handle in interacting_handles:
-        fout.write('{}\n'.format(handle))
 
 fout.close()
 
