@@ -139,7 +139,7 @@ class Conversation:
         creates a vector that given a list L any element L(i) appearing in a conversation a the observed Twitter handle
         adds the number of occurrences L(i) is present in the conversation.
 
-        :param handle: Twitter handle of observed accounts
+        :param handle: Twitter handle of observed accounts which initiated conversations
         :param _list: elements comparing with a specific conversation for a given Twitter handle
         :return: a vector containing number of deleted tweets per conversation. Ex: [3, 1, 0, 33, 0]
         """
@@ -190,10 +190,10 @@ class Conversation:
 
     def all_handle_tweets(self, handle):
         """
-        Given a Twitter handle returns all conversation for which the handle interacted with
+        Given a Twitter handle that started a conversation returns all tweets sent by the handle
 
         :param handle: Twitter handle
-        return: object containing conversation data
+        return: object containing tweet features conversation-id, tweet-text, and tweet-time
         """
 
         _conversation_list = []
@@ -213,6 +213,42 @@ class Conversation:
         return _conversation_list
 
     def handle_conversation_matrix(self, _handle, _element_list):
+        """
+        Given a Twitter handle that started a conversation and a list containing a set of handles that participated
+        in the conversation (this set of handles could be the entire list of handles that participated in the
+        conversation or a partial set of handles, such as handles which Twitter account was deleted or suspended, etc.
+
+        :param _handle: Twitter handle that initiated a conversation
+        :param _element_list: set of handles that participated in the Twitter conversation (all or partial, such as
+                              handles associated with a deleted or suspended Twitter account.
+        :return: two objects: obj1, obj2
+
+                 obj1: is a list containing a dictionary of all conversation initiated by the handle. The dictionary has
+                 for index the conversation-id, and its value is a dictionary containing the handles that participated
+                 in the conversation (index), and the number of tweets that handle contributed (value).
+
+                 obj1 Ex:
+                 -------
+                 [{'927337524808347648': {'AndreaEscobar77': 1,'Anniepie10': 5}}, {'794926969829920768': {'mary': 20'}}]
+
+                 obj1
+                 ====
+                 has two conversations '927337524808347648' and '794926969829920768'; handle mary appeared in the
+                 second conversation and tweeted 20 times.
+
+                 obj2: is a dictionary containing the handles intercepting _element list (index) across all
+                 conversations initiated by the Twitter _handle. The dictionary value is the number of interaction the
+                 index contributed across all conversations.
+
+                 obj2 Ex:
+                 -------
+                 { 'agardendesign': 1, 'Saul0074u': 5, 'patriot08642': 1}
+
+                 obj2
+                 ====
+                 There were three handles that were involved in _handle conversations. Handle 'Saul0074u' contributed
+                 5 tweets across all conversations.
+        """
         _conversation_id = []
         _handle_count = {}
 
@@ -237,6 +273,15 @@ class Conversation:
         return _conversation_id, _handle_count
 
     def handle_text_conversation_replies(self, _handle, _conversation_id, _handle_replying):
+        """
+        Given a Twitter handle that started a conversation, the conversation-id, and a handle that interacting in the
+        conversation, it returns all the tweets made by the interacting handle
+
+        :param _handle: Twitter handle that started a conversation
+        :param _conversation_id: Twitter conversation-id
+        :param _handle_replying: Twitter handle that interacted in the conversation.
+        :return: a list of text
+        """
         _replying_text = []
 
         if _conversation_id in self.conversations[_handle]:
