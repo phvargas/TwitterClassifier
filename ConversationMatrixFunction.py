@@ -6,7 +6,7 @@ import plotly
 
 plotly.offline.init_notebook_mode(connected=True)
 
-observed = Conversation('/home/hamar/data/odu/golbeck/verifiedUserDataset/tweetConvo.dat')
+observed = Conversation('data/verifiedUserDataset/tweetConvo.dat')
 
 my_deleted_list = []
 my_suspended_list = []
