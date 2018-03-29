@@ -10,6 +10,7 @@ def main(**kwarg):
     root_url = 'https://twitter.com/'
     suspended = set()
     deleted = set()
+    error = []
 
     print(kwarg)
     path = kwarg['path']
@@ -26,6 +27,7 @@ def main(**kwarg):
     end = number_handles
 
     time_str = "_%Y%m%d.dat"
+    error_str = '_%Y%m%d.log'
     if 'part' in kwarg:
         value = kwarg['part'].split('-')
         number_partitions = int(value[1])
@@ -60,7 +62,10 @@ def main(**kwarg):
                 elif r.status_code == 200:
                     pass
                 else:
-                    print('\t{}. Encountered unanticipated exception for account {}. Status:'.format(counter, r.status_code))
+                    error.append('Account: {}, Error: {}'.format(account, r.status_code))
+                    print('\t{}. Encountered unanticipated exception for account {}. Status: {}'.format(counter,
+                                                                                                        account,
+                                                                                                        r.status_code))
             except:
                 local_date = strftime(time_str)
 
@@ -75,6 +80,12 @@ def main(**kwarg):
                     with open(sus_path, mode='w') as fh_ds:
                         for handle in suspended:
                             fh_ds.write('{}\n'.format(handle))
+
+                if error:
+                    error_path = sus_del_path + 'error' + strftime(error_str)
+                    with open(error_path, mode='w') as fh_ds:
+                        for error_line in error:
+                            fh_ds.write('{}\n'.format(error_line))
                 exit(-1)
 
     local_date = strftime(time_str)
@@ -90,6 +101,12 @@ def main(**kwarg):
         with open(sus_path, mode='w') as fh_ds:
             for handle in suspended:
                 fh_ds.write('{}\n'.format(handle))
+
+    if error:
+        error_path = sus_del_path + 'error' + strftime(error_str)
+        with open(error_path, mode='w') as fh_ds:
+            for error_line in error:
+                fh_ds.write('{}\n'.format(error_line))
 
 
 def make_partition(size, number_partitions):
