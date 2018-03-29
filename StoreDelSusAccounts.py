@@ -5,8 +5,29 @@ import os
 import requests
 import Utilities.ConvertDataType as conv
 
+"""
+StoreDelSusAccounts.py: Given a list of Twitter accounts the script determines if the account is suspended or deleted.
+                        The determination is based on the RESPONSE CODE obtained by requesting the resource:
+                        https://twitter.com/username. The deleted accounts will be placed in a file of the form:
+                        <path_deleted_YYMMDD.dat>. Suspended accounts file has the form <path_suspended_YYMMDD.dat>.
+                        
+                        The script allows to split the list into multiple chunks to increase performance. 
+                         
+"""
+
+__author__ = 'Plinio H. Vargas'
+__date__ = 'Thu,  Mar 29, 2018 at 06:11'
+__email__ = 'pvargas@cs.odu.edu'
+
 
 def main(**kwarg):
+    """
+
+    :param kwarg: a dictionary containing the path of the files where the deleted/suspended accounts will be stored.
+                  path: is of the file where the capture conversations are stored.
+                  sus_del_path: is the folder where the deleted and suspended accountn will be store.
+    :return: None
+    """
     root_url = 'https://twitter.com/'
     suspended = set()
     deleted = set()
