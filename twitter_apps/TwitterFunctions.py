@@ -4,17 +4,16 @@ import twitter
 from tweepy import OAuthHandler
 
 
-class TObject(object):
+class TObject(object, auth='males'):
     """
     Generic Twitter Class for sentiment analysis.
     """
-    def __init__(self):
+    def __init__(self, auth='males'):
         from twitter_apps.Keys import provide_keys
         """
         Class constructor or initialization method.
         """
-        key = provide_keys('males')
-
+        key = provide_keys(auth)
 
         try:
             self.api = twitter.Api(consumer_key=key['consumer_key'],
@@ -22,7 +21,7 @@ class TObject(object):
                                    access_token_key=key['access_token_key'],
                                    access_token_secret=key['access_token_secret'])
         except:
-            print("Authentication Failed...")
+            print("Authentication Failed...", file=sys.stderr)
 
 
 class TwitterObject(object):
@@ -30,13 +29,13 @@ class TwitterObject(object):
     Generic Twitter Class for sentiment analysis.
     """
 
-    def __init__(self):
+    def __init__(self, auth='males'):
         from twitter_apps.Keys import provide_keys
         """
         Class constructor or initialization method.
         """
         # keys and tokens from the Twitter Dev Console
-        key = provide_keys('males')
+        key = provide_keys(auth)
 
         consumer_key = key['consumer_key']
         consumer_secret = key['consumer_secret']
