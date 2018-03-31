@@ -44,8 +44,7 @@ def main(**kwarg):
     deleted_accounts = []
     suspended_accounts = []
     del_sus_accounts = []
-    del_files = []
-    sus_files = []
+
     regex_deleted = re.compile('deleted_\\d{8}\\..*')
     regex_suspended = re.compile('suspended_\\d{8}\\..*')
 
@@ -128,9 +127,13 @@ def main(**kwarg):
 
     for counter, handle in enumerate(interacting_handles):
         if start <= counter < end:
-            data = tweet.get_tweets(handle)
-            print('Capture {:,} tweets for {}'.format(len(data), handle))
-            tweet.save(handle, data)
+            if handle in tweet.handles:
+                print('Skipping account <{}>. Tweets on file ...'.format(handle))
+
+            else:
+                data = tweet.get_tweets(handle)
+                print('Capture {:,} tweets for {}'.format(len(data), handle))
+                tweet.save(handle, data)
 
 
 if __name__ == '__main__':
