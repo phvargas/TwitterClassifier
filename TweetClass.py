@@ -19,11 +19,11 @@ class TweetClass:
             self.load_tweets_files()
 
         else:
-            print("Could not find folder: {}".format(path_tweet), file=sys.stderr)
+            print("Could not find tweet folder: {}".format(path_tweet), file=sys.stderr)
             exit(-1)
 
         self.handle_with_tweets = len(self.handles)
-        self.tweetObject = TObject()
+        self.tweetObject = TObject(self.auth)
 
     def load_tweets_files(self,):
         dir_files = os.listdir(self.path)
@@ -117,4 +117,3 @@ class TweetClass:
             data = pickle.load(f)
 
         return data
-
