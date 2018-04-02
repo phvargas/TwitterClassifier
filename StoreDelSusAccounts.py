@@ -1,5 +1,7 @@
 from Conversation import Conversation
+from multiprocessing import Process
 from time import strftime
+import time
 import sys
 import os
 import requests
@@ -230,6 +232,28 @@ if __name__ == '__main__':
             print('\nParameter <part> MUST have two integers between a dash. Ex: part=1-10', file=sys.stderr)
             sys.exit(-1)
 
-    main(**params)
+    if 'thread' in params:
+        try:
+            value = int(params['thread'])
+
+        except ValueError:
+            print('\nMulti-Thread parameter must be an INTEGER. Passed value "{}" is not'.format(value), file=sys.stderr)
+            sys.exit(-1)
+
+        thread = []
+        for part in range(1, int(params['thread']) + 1):
+            params['part'] = str(part) + '-' + params['thread']
+            thread.append(Process(target=main, kwargs=params))
+
+            time.sleep(2)
+
+            thread[part - 1].start()
+
+        for part in range(int(params['thread'])):
+            thread[part].join()
+
+        print('All threads ended ...')
+    else:
+        main(**params)
 
     sys.exit(1)
