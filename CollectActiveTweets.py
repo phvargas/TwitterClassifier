@@ -168,16 +168,16 @@ if __name__ == '__main__':
     if len(sys.argv) < 3:
         print('\nNot enough arguments..', file=sys.stderr)
         print('File where conversations are contained is required ...', file=sys.stderr)
-        print('Usage: python3 CollectActive.py path=path-to-conversations path_tweet=path-where-tweets-reside <del_path="path-to-del-sus-folder>',
-              file=sys.stderr)
+        print('Usage: python3 CollectActive.py path=path-to-conversations path_tweet=path-where-tweets-reside' +
+              ' <del_path="path-to-del-sus-folder>', file=sys.stderr)
         sys.exit(-1)
 
     params = conv.list2kwarg(sys.argv[1:])
 
     if 'path' not in params or 'path_tweet' not in params:
         print('\npath and path_tweet are MANDATORY parameters', file=sys.stderr)
-        print('Usage: python3 CollectActive.py path=path-to-conversations path_tweet=path-where-tweets-reside <del_path=path-to-del-sus-folder>',
-              file=sys.stderr)
+        print('Usage: python3 CollectActive.py path=path-to-conversations path_tweet=path-where-tweets-reside' +
+              ' <del_path="path-to-del-sus-folder>', file=sys.stderr)
         sys.exit(-1)
 
     if not os.path.isfile(params['path']):
