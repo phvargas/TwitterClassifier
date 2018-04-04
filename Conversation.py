@@ -13,8 +13,11 @@ class Conversation:
             print("Could not find file: {}".format(conversation_filename), file=sys.stderr)
             exit(-1)
 
-        self.max_number_conversations = max([len(self.handle_conversations_id(x))
-                                             for x in self.conversations])
+        try:
+            self.max_number_conversations = max([len(self.handle_conversations_id(x))
+                                                 for x in self.conversations])
+        except ValueError:
+            self.max_number_conversations = []
 
     def load_conversations(self, filename):
         with open(filename, "r", encoding='iso-8859-1') as fs:
@@ -47,12 +50,13 @@ class Conversation:
                             conversation_block['tweet-time'] = loaded_conversation[_idx]['tweet-time']
                             conversation_block['tweet-text'] = loaded_conversation[_idx]['tweet-text']
                         else:
-                            conversation_block['interactions'].append({
-                                'data-tweet-id': loaded_conversation[_idx]['data-tweet-id'],
-                                'data-screen-name': loaded_conversation[_idx]['data-screen-name'],
-                                'tweet-time': loaded_conversation[_idx]['tweet-time'],
-                                'tweet-text': loaded_conversation[_idx]['tweet-text']
-                            })
+                            if 'data-screen-name' in loaded_conversation:
+                                conversation_block['interactions'].append({
+                                    'data-tweet-id': loaded_conversation[_idx]['data-tweet-id'],
+                                    'data-screen-name': loaded_conversation[_idx]['data-screen-name'],
+                                    'tweet-time': loaded_conversation[_idx]['tweet-time'],
+                                    'tweet-text': loaded_conversation[_idx]['tweet-text']
+                                })
 
                     if conversation_block['data-screen-name'] in self.conversations:
                         self.conversations[conversation_block['data-screen-name']][conversation_idx] = {
