@@ -5,6 +5,7 @@ import twitter
 import time as timeit
 import pickle
 import gzip
+import json
 from twitter_apps.TwitterFunctions import TObject
 
 
@@ -39,11 +40,16 @@ class TweetClass:
         self.handles.sort()
 
     def get_tweets(self, handle, max_count=3200):
+        if max_count < 200:
+            default_count = max_count
+        else:
+            default_count = 200
+
         handle_tweets = []
         print("Getting tweets for {}".format(handle), file=sys.stderr)
 
         # make initial request for most recent tweets (200 is the maximum allowed count)
-        new_tweets = self.retrieve_tweet_blocks(handle)
+        new_tweets = self.retrieve_tweet_blocks(handle, default_count)
         for tweet in new_tweets:
             handle_tweets.append(tweet)
 
@@ -57,7 +63,12 @@ class TweetClass:
         # keep grabbing tweets until there are no tweets left to grab
         while 0 < len(handle_tweets) < max_count:
             # all subsequent requests use the max_id param to prevent duplicates
-            new_tweets = self.retrieve_tweet_blocks(handle, 200, oldest)
+            if max_count == 3200 or (max_count - len(handle_tweets)) > 200:
+                default_count = 200
+            else:
+                default_count = max_count - len(handle_tweets)
+
+            new_tweets = self.retrieve_tweet_blocks(handle, default_count, oldest)
 
             for tweet in new_tweets:
                 handle_tweets.append(tweet)
@@ -104,6 +115,19 @@ class TweetClass:
 
         with gzip.open(filename, mode='wb') as f:
             pickle.dump(_data, f, pickle.HIGHEST_PROTOCOL)
+
+    def json_save(self, handle, _data):
+        """
+        save objects into a compressed diskfile
+        :param
+        """
+        json_str = json.dumps(_data) + "\n"
+        json_bytes = json_str.encode('utf-8')
+
+        filename = self.path + handle + self.suffix
+
+        with gzip.open(filename, mode='wb') as f:
+            f.write(json_bytes)
 
     def load(self, handle):
         """
