@@ -53,9 +53,14 @@ def main(**kwarg):
     else:
         conversation_file = kwarg['path'] + 'Conversation' + time_str
 
-    print('Conversation will be recoreded at: {}'.format(conversation_file))
+    if 'rewrite' in kwarg:
+        kwarg['rewrite'] = bool(kwarg['rewrite'])
 
-    print('Capturing conversations from the Twitter VMP account {:,} to {:,} ...'.format(start, end))
+    conversation_file = kwarg['path'] + 'ConvTest1.dat'
+
+    print('Conversation will be recorded at: {}'.format(conversation_file))
+
+    print('Capturing conversations from the Twitter VMP account {:,} to {:,} ...'.format(start + 1, end + 1))
 
     vmp_tweetsID = []
     for counter, handle in enumerate(vmp_accounts):
@@ -67,11 +72,32 @@ def main(**kwarg):
                         for k, tweet in enumerate(tweets):
                             vmp_tweetsID.append(tweet['id'])
 
+    rewriting = True
+    conversations = []
+    conversations_idx = set()
+    if 'rewrite' in kwarg and not kwarg['rewrite']:
+        rewriting = False
+        with open(conversation_file, mode='r') as inFile:
+            for conversation in inFile:
+                if conversation.strip() != '{}':
+                    loaded_conversation = json.loads(conversation.strip())
+                    conversations.append(loaded_conversation)
+                    for idx in loaded_conversation:
+                        conversations_idx.add(int(idx))
+
+    print(conversations_idx)
+
     flag = True
     with open(conversation_file, "w") as outFile:
+        if not rewriting:
+            for conversation in conversations:
+                outFile.write(json.dumps(conversation))
+                outFile.write("\n")
+
         for tweetID in vmp_tweetsID:
-            print(tweetID)
-            if flag:
+            print(type(tweetID), tweetID)
+            if tweetID not in conversations_idx:
+                print('Extracting conversation {} ...'.format(tweetID))
                 url = baseURL + str(tweetID)
                 convoDict = extractor.extractTweetsFromTweetURI(tweetConvURI=url)
                 outFile.write(json.dumps(convoDict))
@@ -111,6 +137,8 @@ def main(**kwarg):
 
                 os.remove(tmp_file)
                 outFile.write("\n")
+            else:
+                print('Skipping conversation {} ...'.format(tweetID))
 
 
 if __name__ == '__main__':
@@ -131,6 +159,10 @@ if __name__ == '__main__':
            Ex: A conversation containing 100 handles could be broken in two pieces. Then, passing the parameter
                part=1-2 indicates that the running instance will work with elements 0-49. Another instance could run
                concurrently (part=2-2) to work elements 50-100.
+               
+    :rewrite: this is an optional parameter. This is parameter requires a boolean value. Possible values are True or False.
+              The default value of this parameter is TRUE. If the values is FALSE and a conversation was recorded then 
+              the script will load the file and it will skip any conversation that was included in the file.               
 
     running example: python3 getTweetConvos.py part=1-10 path=data/verifiedUserDataset/ 
                      del_path=data/DeletedSuspendedAccounts/ profile_path=data/AccountProfiles/
@@ -185,6 +217,13 @@ if __name__ == '__main__':
         except ValueError:
             print('\nParameter <part> MUST have two integers between a dash. Ex: part=1-10', file=sys.stderr)
             sys.exit(-1)
+
+    if 'rewrite' in params:
+        if params['rewrite'].lower() not in ['false', 'true', '1', '0']:
+            print('\nParameter <rewrite> possible values are: True, False, 0, or 1', file=sys.stderr)
+            sys.exit(-1)
+        elif params['rewrite'].lower() in ['false', '0']:
+            params['rewrite'] = ''
 
     main(**params)
 
