@@ -56,8 +56,6 @@ def main(**kwarg):
     if 'rewrite' in kwarg:
         kwarg['rewrite'] = bool(kwarg['rewrite'])
 
-    conversation_file = kwarg['path'] + 'ConvTest1.dat'
-
     old_conversation = Conversation(conversation_file)
 
     print('Conversation will be recorded at: {}'.format(conversation_file))
