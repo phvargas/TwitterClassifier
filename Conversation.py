@@ -49,8 +49,9 @@ class Conversation:
                             conversation_block['data-screen-name'] = loaded_conversation[_idx]['data-screen-name'].lower()
                             conversation_block['tweet-time'] = loaded_conversation[_idx]['tweet-time']
                             conversation_block['tweet-text'] = loaded_conversation[_idx]['tweet-text']
+
                         else:
-                            if 'data-screen-name' in loaded_conversation:
+                            if 'data-screen-name' in loaded_conversation[_idx]:
                                 conversation_block['interactions'].append({
                                     'data-tweet-id': loaded_conversation[_idx]['data-tweet-id'],
                                     'data-screen-name': loaded_conversation[_idx]['data-screen-name'],
@@ -58,13 +59,13 @@ class Conversation:
                                     'tweet-text': loaded_conversation[_idx]['tweet-text']
                                 })
 
-                    if conversation_block['data-screen-name'] in self.conversations:
+                    if 'data-screen-name' in conversation_block and conversation_block['data-screen-name'] in self.conversations:
                         self.conversations[conversation_block['data-screen-name']][conversation_idx] = {
                             'tweet-time': conversation_block['tweet-time'],
                             'tweet-text': conversation_block['tweet-text'],
                             'interactions': conversation_block['interactions']
                         }
-                    else:
+                    elif 'data-screen-name' in conversation_block:
                         self.conversations[conversation_block['data-screen-name']] = {
                             conversation_idx: {
                                 'tweet-time': conversation_block['tweet-time'],
@@ -202,17 +203,13 @@ class Conversation:
 
         _conversation_list = []
 
-        for _handle in self.conversations:
-            for _conversation in self.conversations[_handle]:
-                if self.conversations[_handle][_conversation]['interactions']:
-                    for _account in self.conversations[_handle][_conversation]['interactions']:
-                        if _account['data-screen-name'].lower() == handle:
-                            _conversation_list.append({
-                                'handle': _handle,
-                                'data-conversation-id': _conversation,
-                                'tweet-time': _account['tweet-time'],
-                                'tweet-text': _account['tweet-text'],
-                            })
+        if handle in self.conversations:
+            for _idx in self.conversations[handle]:
+                _conversation_list.append({
+                    'data-conversation-id': _idx,
+                    'tweet-time': self.conversations[handle][_idx]['tweet-time'],
+                    'tweet-text': self.conversations[handle][_idx]['tweet-text'],
+                })
 
         return _conversation_list
 
@@ -294,3 +291,11 @@ class Conversation:
                     _replying_text.append(_record['tweet-text'])
 
         return _replying_text
+
+    def retrieve_root_handles(self):
+        """
+        From all the conversations captured return a set of handles that initiated a conversations
+        :return: a set of all VMP handles. Ex: {'barackobama', 'seanhannity'}
+        """
+
+        return set([_handle.lower() for _handle in self.conversations])
