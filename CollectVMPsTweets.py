@@ -8,7 +8,6 @@ import Utilities.ConvertDataType as conv
 from TweetClass import TweetClass
 from Utilities.FilePartition import make_partition, get_partition_range
 
-
 """
 CollectActiveTweets.py: From a captured set of conversations (Verified Media Personalities - VMP) the script extract a
                         list of handles that interacted in the conversations. If a list of deleted and suspended is 
@@ -34,12 +33,12 @@ def main(**kwarg):
     path = kwarg['path']
     path_tweets = kwarg['path_tweet']
 
-    max_tweet = 100
+    max_tweet = 5
 
     print('\nLoading conversations ...')
     observed = Conversation(path)
 
-    #interacting_handles = observed.all_conversation_elements_set()
+    # interacting_handles = observed.all_conversation_elements_set()
     interacting_handles = [
         'connieschultz', 'KHayhoe', 'billkeller2014', 'BetsyDeVosED', 'davidfolkenflik', 'ClaireAForlani',
         'britmarling',
@@ -67,9 +66,14 @@ def main(**kwarg):
         'seanhannity', 'paulkrugman', 'iamjohnoliver', 'trevornoah', 'BernieSanders', 'maddow', 'michelleobama',
         'andersoncooper', 'hillaryclinton', 'oprah', 'BarackObama'
     ]
+
+    interacting_handles = ['tomfriedman']
+
     number_handles = len(interacting_handles)
     print('Number of Twitter accounts interacting in all conversations: {:,}'.format(number_handles))
 
+    auth = params['auth']
+    print(auth, len(auth))
     tweet = TweetClass(path_tweets, params['auth'])
     deleted_accounts = []
     suspended_accounts = []
@@ -122,7 +126,8 @@ def main(**kwarg):
             print('Number of combine deleted/suspended accounts is {:,}'.format(len(del_sus_accounts)))
 
             interacting_handles = set(interacting_handles) - set(del_sus_accounts)
-            print('\nConsidering ONLY {:,} Twitter Accounts to collect MAX number of tweets'.format(len(interacting_handles)))
+            print('\nConsidering ONLY {:,} Twitter Accounts to collect MAX number of tweets'.format(
+                len(interacting_handles)))
             interacting_handles = list(interacting_handles)
 
     else:
@@ -179,7 +184,7 @@ if __name__ == '__main__':
     :path: path to the file where all capture conversations are stored. The conversations will be uploaded into memory.
            The uploaded object will contain the handles that interacted in the conversations. This is a MANDATORY
            parameter.
-           
+
     :tweet_path: path of folder where tweets are stored. This is a MANDATORY parameter.
 
     :del_path: this parameter is the folder where the discovered deleted and suspended accounts are stored.
@@ -194,7 +199,7 @@ if __name__ == '__main__':
            Ex: A conversation containing 100 handles could be broken in two pieces. Then, passing the parameter
                part=1-2 indicates that the running instance will work with elements 0-49. Another instance could run
                concurrently (part=2-2) to work elements 50-100.
-               
+
     :auth: this parameter provides the authorization account which interact the Twitter API. These authorization accounts
            are present in the module [twitter_apps.Keys.py]. An entry for the account contains the values for:['consumer_key'],
            ['consumer_secret'], ['access_token_key'], and ['access_token_secret'].
@@ -210,6 +215,10 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     params = conv.list2kwarg(sys.argv[1:])
+
+    if type(params).__name__ != 'dict':
+        print('\nParameter keys were not included. Ex: path, tweet_path, etc. ...', file=sys.stderr)
+        exit(-1)
 
     if 'path' not in params or 'path_tweet' not in params:
         print('\npath and path_tweet are MANDATORY parameters', file=sys.stderr)
@@ -228,15 +237,6 @@ if __name__ == '__main__':
     # add / to end of folder path if not given
     if params['path_tweet'][-1] != '/':
         params['path_tweet'] = params['path_tweet'] + '/'
-
-    if params['del_path'] and not os.path.isdir(params['del_path']):
-        print('\nCould not find folder: {}'.format(params['del_path']), file=sys.stderr)
-        sys.exit(-1)
-
-    # add / to end of folder path if not given
-    if params['del_path'] and params['del_path'][-1] != '/':
-        params['del_path'] = params['del_path'] + '/'
-        print(params['del_path'])
 
     if 'part' in params:
         part = params['part'].split('-')
