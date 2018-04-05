@@ -7,7 +7,6 @@ import Utilities.ConvertDataType as conv
 from TweetClass import TweetClass
 from Utilities.FilePartition import make_partition, get_partition_range
 
-
 """
 CollectActiveTweets.py: From a captured set of conversations (Verified Media Personalities - VMP) the script extract a
                         list of handles that interacted in the conversations. If a list of deleted and suspended is 
@@ -92,7 +91,8 @@ def main(**kwarg):
             print('Number of combine deleted/suspended accounts is {:,}'.format(len(del_sus_accounts)))
 
             interacting_handles = set(interacting_handles) - set(del_sus_accounts)
-            print('\nConsidering ONLY {:,} Twitter Accounts to collect MAX number of tweets'.format(len(interacting_handles)))
+            print('\nConsidering ONLY {:,} Twitter Accounts to collect MAX number of tweets'.format(
+                len(interacting_handles)))
             interacting_handles = list(interacting_handles)
 
     else:
@@ -142,7 +142,7 @@ if __name__ == '__main__':
     :path: path to the file where all capture conversations are stored. The conversations will be uploaded into memory.
            The uploaded object will contain the handles that interacted in the conversations. This is a MANDATORY
            parameter.
-           
+
     :tweet_path: path of folder where tweets are stored. This is a MANDATORY parameter.
 
     :del_path: this parameter is the folder where the discovered deleted and suspended accounts are stored.
@@ -157,7 +157,7 @@ if __name__ == '__main__':
            Ex: A conversation containing 100 handles could be broken in two pieces. Then, passing the parameter
                part=1-2 indicates that the running instance will work with elements 0-49. Another instance could run
                concurrently (part=2-2) to work elements 50-100.
-               
+
     :auth: this parameter provides the authorization account which interact the Twitter API. These authorization accounts
            are present in the module [twitter_apps.Keys.py]. An entry for the account contains the values for:['consumer_key'],
            ['consumer_secret'], ['access_token_key'], and ['access_token_secret'].
