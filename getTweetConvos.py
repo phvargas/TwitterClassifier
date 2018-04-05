@@ -50,8 +50,13 @@ def main(**kwarg):
             end = work_range[1]
 
         conversation_file = kwarg['path'] + 'Conversation_' + value[0] + '_' + value[1] + time_str
+
     else:
         conversation_file = kwarg['path'] + 'Conversation' + time_str
+
+    if not os.path.isfile(conversation_file):
+        f = open(conversation_file, mode='w')
+        f.close()
 
     if 'rewrite' in kwarg:
         kwarg['rewrite'] = bool(kwarg['rewrite'])
@@ -92,10 +97,6 @@ def main(**kwarg):
                 if conversation.strip() != '{}':
                     loaded_conversation = json.loads(conversation.strip())
                     conversations.append(loaded_conversation)
-                    """
-                    for idx in loaded_conversation:
-                        conversations_idx.add(int(idx))
-                    """
 
     with open(conversation_file, "w") as outFile:
         if not rewriting:
@@ -105,7 +106,7 @@ def main(**kwarg):
 
         for tweetID in vmp_tweetsID:
             if tweetID not in conversations_idx:
-                print('Extracting conversation-id:'.format(tweetID))
+                print('Extracting conversation-id: {}'.format(tweetID))
                 url = baseURL + str(tweetID)
                 convoDict = extractor.extractTweetsFromTweetURI(tweetConvURI=url)
                 outFile.write(json.dumps(convoDict))
