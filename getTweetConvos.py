@@ -58,36 +58,47 @@ def main(**kwarg):
 
     conversation_file = kwarg['path'] + 'ConvTest1.dat'
 
+    old_conversation = Conversation(conversation_file)
+
     print('Conversation will be recorded at: {}'.format(conversation_file))
 
-    print('Capturing conversations from the Twitter VMP account {:,} to {:,} ...'.format(start + 1, end + 1))
+    print('Capturing conversations from the Twitter VMP account {:,} to {:,} ...'.format(start + 1, end))
 
+    conversations_idx = set()
     vmp_tweetsID = []
+
     for counter, handle in enumerate(vmp_accounts):
         if start <= counter < end:
+            try:
+                for tweet_in in old_conversation.handle_conversations_id(handle):
+                    conversations_idx.add(int(tweet_in))
+            except KeyError:
+                "No conversations was recorded for current handle"
+                pass
+
             with gzip.open(kwarg['path_tweet'] + handle + '.twt.gz', mode='rb') as tweetIDFile:
                 for records in tweetIDFile.read().decode('utf-8').split("\n"):
                     if records:
                         tweets = json.loads(records)
-                        for k, tweet in enumerate(tweets):
+                        for tweet in tweets:
                             vmp_tweetsID.append(tweet['id'])
 
     rewriting = True
     conversations = []
-    conversations_idx = set()
+
     if 'rewrite' in kwarg and not kwarg['rewrite']:
+        print('Not re-writing previous recorded conversations...')
         rewriting = False
         with open(conversation_file, mode='r') as inFile:
             for conversation in inFile:
                 if conversation.strip() != '{}':
                     loaded_conversation = json.loads(conversation.strip())
                     conversations.append(loaded_conversation)
+                    """
                     for idx in loaded_conversation:
                         conversations_idx.add(int(idx))
+                    """
 
-    print(conversations_idx)
-
-    flag = True
     with open(conversation_file, "w") as outFile:
         if not rewriting:
             for conversation in conversations:
@@ -95,9 +106,8 @@ def main(**kwarg):
                 outFile.write("\n")
 
         for tweetID in vmp_tweetsID:
-            print(type(tweetID), tweetID)
             if tweetID not in conversations_idx:
-                print('Extracting conversation {} ...'.format(tweetID))
+                print('Extracting conversation-id:'.format(tweetID))
                 url = baseURL + str(tweetID)
                 convoDict = extractor.extractTweetsFromTweetURI(tweetConvURI=url)
                 outFile.write(json.dumps(convoDict))
@@ -138,7 +148,7 @@ def main(**kwarg):
                 os.remove(tmp_file)
                 outFile.write("\n")
             else:
-                print('Skipping conversation {} ...'.format(tweetID))
+                print('Skipping conversation-id: {} ...'.format(tweetID))
 
 
 if __name__ == '__main__':
@@ -148,7 +158,7 @@ if __name__ == '__main__':
            This is a MANDATORY parameter.
 
     :tweet_path: path of folder where VMPs tweets are stored. This is a MANDATORY parameter.
-    
+
     :profile_pah: path of folder where interacting profiles will be stored. This is a MANDATORY parameter.
 
 
@@ -159,7 +169,7 @@ if __name__ == '__main__':
            Ex: A conversation containing 100 handles could be broken in two pieces. Then, passing the parameter
                part=1-2 indicates that the running instance will work with elements 0-49. Another instance could run
                concurrently (part=2-2) to work elements 50-100.
-               
+
     :rewrite: this is an optional parameter. This is parameter requires a boolean value. Possible values are True or False.
               The default value of this parameter is TRUE. If the values is FALSE and a conversation was recorded then 
               the script will load the file and it will skip any conversation that was included in the file.               
@@ -170,8 +180,8 @@ if __name__ == '__main__':
     if len(sys.argv) < 4:
         print('\nNot enough arguments..', file=sys.stderr)
         print('File where conversations are contained is required ...', file=sys.stderr)
-        print('Usage: python3 CollectActive.py path=path-to-conversations path_tweet=path-where-tweets-reside' +
-              ' profile_path="path-to-profile-folder>', file=sys.stderr)
+        print('Usage: python3 getTweetConvos.py path=path-to-conversations path_tweet=path-where-tweets-reside' +
+              ' profile_path=path-to-profile-folder>', file=sys.stderr)
         sys.exit(-1)
 
     params = conv.list2kwarg(sys.argv[1:])
@@ -191,7 +201,8 @@ if __name__ == '__main__':
         sys.exit(-1)
 
     if not os.path.isdir(params['profile_path']):
-        print('\nCould not find folder where profiles will be stored: {}'.format(params['profile_path']), file=sys.stderr)
+        print('\nCould not find folder where profiles will be stored: {}'.format(params['profile_path']),
+              file=sys.stderr)
         sys.exit(-1)
 
     # add / to end of folder path if not given
@@ -224,6 +235,8 @@ if __name__ == '__main__':
             sys.exit(-1)
         elif params['rewrite'].lower() in ['false', '0']:
             params['rewrite'] = ''
+    else:
+        params['rewrite'] = ''
 
     main(**params)
 
