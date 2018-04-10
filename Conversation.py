@@ -30,9 +30,6 @@ class Conversation:
                     if loaded_conversation:
                         conversation_idx = next(iter(loaded_conversation.values()))['data-conversation-id']
                         conversation_block['data-conversation-id'] = conversation_idx
-                    else:
-                        print(loaded_conversation)
-                        exit(-22)
 
                     # separate root from response conversations
                     for _idx in loaded_conversation:
