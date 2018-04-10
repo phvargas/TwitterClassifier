@@ -6,7 +6,7 @@ import plotly
 
 # plotly.offline.init_notebook_mode(connected=True)
 
-observed = Conversation('/home/hamar/data/odu/golbeck/verifiedUserDataset/tweetConvo.dat')
+observed = Conversation('data/verifiedUserDataset/Conversation_20180407a.dat')
 
 my_deleted_list = []
 my_suspended_list = []
@@ -49,7 +49,7 @@ total_number_conversations = 0
 total_number_handles_in_conversation = 0
 total_appearance_across_conversation = 0
 
-for current_handle in get_values(handle='fredbarnes'):
+for current_handle in get_values('fredbarnes'):
     print(current_handle)
     conversation_id = []
 
