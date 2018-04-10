@@ -4,7 +4,7 @@ import twitter
 from tweepy import OAuthHandler
 
 
-class TObject(object, auth='males'):
+class TObject(object):
     """
     Generic Twitter Class for sentiment analysis.
     """
