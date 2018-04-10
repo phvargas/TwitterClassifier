@@ -33,7 +33,7 @@ def main(**kwarg):
     path = kwarg['path']
     path_tweets = kwarg['path_tweet']
 
-    max_tweet = 5
+    max_tweet = 100
 
     print('\nLoading conversations ...')
     observed = Conversation(path)
@@ -65,7 +65,7 @@ def main(**kwarg):
         'maddow', 'michelleobama', 'andersoncooper', 'hillaryclinton', 'oprah', 'BarackObama'
     ]
 
-    interacting_handles = ['tomfriedman']
+    interacting_handles = ['glennbeck', 'gloriasteinem', 'greggutfeld', 'greta']
 
     number_handles = len(interacting_handles)
     print('Number of Twitter accounts interacting in all conversations: {:,}'.format(number_handles))
@@ -160,7 +160,7 @@ def main(**kwarg):
 
     for counter, handle in enumerate(interacting_handles):
         if start <= counter < end:
-            if handle in tweet.handles:
+            if handle in tweet.handles and False:
                 print('Skipping account <{}>. Tweets on file ...'.format(handle))
 
             else:
@@ -220,7 +220,7 @@ if __name__ == '__main__':
 
     if 'path' not in params or 'path_tweet' not in params:
         print('\npath and path_tweet are MANDATORY parameters', file=sys.stderr)
-        print('Usage: python3 CollectActive.py path=path-to-conversations path_tweet=path-where-tweets-reside' +
+        print('Usage: python3 CollectVMPsTweets.py path=path-to-conversations path_tweet=path-where-tweets-reside' +
               ' <del_path="path-to-del-sus-folder>', file=sys.stderr)
         sys.exit(-1)
 
