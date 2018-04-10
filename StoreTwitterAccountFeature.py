@@ -3,7 +3,7 @@ import pickle
 from Conversation import Conversation
 from twitter_apps.Subjects import get_values
 
-observed = Conversation('/home/hamar/data/odu/golbeck/verifiedUserDataset/tweetConvo.dat')
+observed = Conversation('data/verifiedUserDataset/Conversation_20180407a.dat')
 
 my_deleted_list = []
 my_suspended_list = []
@@ -46,144 +46,145 @@ for current_handle in get_values():
     print(current_handle)
     conversation_id = []
 
-    if is_tweet_density:
-        all_rows, all_handles = observed.handle_conversation_matrix(current_handle['handle'],
-                                                                    observed.conversation_elements_set(current_handle['handle']))
-    else:
-        all_rows, all_handles = observed.handle_conversation_matrix(current_handle['handle'], my_suspended_deleted_list)
+    if current_handle['handle'].lower() not in ['glennbeck']:
+        if is_tweet_density:
+            all_rows, all_handles = observed.handle_conversation_matrix(current_handle['handle'],
+                                                                        observed.conversation_elements_set(current_handle['handle']))
+        else:
+            all_rows, all_handles = observed.handle_conversation_matrix(current_handle['handle'], my_suspended_deleted_list)
 
-    z = []
+        z = []
 
-    print(' ' * 20, end='')
-    for handle in all_handles:
-        print(handle, end=' - ')
-    print()
-
-    # fill the matrix
-    for row in all_rows:
-        z_row = []
-        key = list(row.keys())[0]
-        print(key, end=' -')
+        print(' ' * 20, end='')
         for handle in all_handles:
-            if handle in row[key]:
-                if handle in appearance:
-                    appearance[handle] += 1
-                else:
-                    appearance[handle] = 1
-
-                print(' {}'.format(row[key][handle]), end='  - ')
-                z_row.append(row[key][handle])
-            else:
-                print(' 0', end='  - ')
-                z_row.append(0)
+            print(handle, end=' - ')
         print()
 
-        z.append(z_row)
+        # fill the matrix
+        for row in all_rows:
+            z_row = []
+            key = list(row.keys())[0]
+            print(key, end=' -')
+            for handle in all_handles:
+                if handle in row[key]:
+                    if handle in appearance:
+                        appearance[handle] += 1
+                    else:
+                        appearance[handle] = 1
 
-    print([sum(z[k]) for k in range(len(z))])
-    print([all_handles[k] for k in all_handles])
+                    print(' {}'.format(row[key][handle]), end='  - ')
+                    z_row.append(row[key][handle])
+                else:
+                    print(' 0', end='  - ')
+                    z_row.append(0)
+            print()
 
-    max_single_tweet = 0
-    max_tweets_in_conversation = 0
-    max_handles_in_conversation = 0
-    account_number_tweets = 0
-    handles_in_conversations = 0
-    single_tweet_set = set()
-    k_max[current_handle['handle']] = {}
+            z.append(z_row)
 
-    for k, conversation in zip(range(len(all_rows)), all_rows):
-        single_tweet_set = single_tweet_set.union(set(z[k]))
+        print([sum(z[k]) for k in range(len(z))])
+        print([all_handles[k] for k in all_handles])
 
-        if max_tweets_in_conversation < sum(z[k]):
-            max_tweets_in_conversation = sum(z[k])
-            k_max[current_handle['handle']]['tweet-in-conversation-id'] = list(conversation)[0]
-            k_max[current_handle['handle']]['tweets-in-conversation-count'] = max_tweets_in_conversation
+        max_single_tweet = 0
+        max_tweets_in_conversation = 0
+        max_handles_in_conversation = 0
+        account_number_tweets = 0
+        handles_in_conversations = 0
+        single_tweet_set = set()
+        k_max[current_handle['handle']] = {}
 
-        if max_handles_in_conversation < np.count_nonzero(z[k]):
-            max_handles_in_conversation = np.count_nonzero(z[k])
-            k_max[current_handle['handle']]['handles-in-conversation-id'] = list(conversation)[0]
-            k_max[current_handle['handle']]['handles-in-conversation-count'] = max_handles_in_conversation
+        for k, conversation in zip(range(len(all_rows)), all_rows):
+            single_tweet_set = single_tweet_set.union(set(z[k]))
 
-        account_number_tweets += sum(z[k])
-        handles_in_conversations += np.count_nonzero(z[k])
+            if max_tweets_in_conversation < sum(z[k]):
+                max_tweets_in_conversation = sum(z[k])
+                k_max[current_handle['handle']]['tweet-in-conversation-id'] = list(conversation)[0]
+                k_max[current_handle['handle']]['tweets-in-conversation-count'] = max_tweets_in_conversation
 
-        print(max(z[k]), sum(z[k]), np.count_nonzero(z[k]))
+            if max_handles_in_conversation < np.count_nonzero(z[k]):
+                max_handles_in_conversation = np.count_nonzero(z[k])
+                k_max[current_handle['handle']]['handles-in-conversation-id'] = list(conversation)[0]
+                k_max[current_handle['handle']]['handles-in-conversation-count'] = max_handles_in_conversation
 
-    total_number_tweets += account_number_tweets
-    total_number_handles_in_conversation += handles_in_conversations
+            account_number_tweets += sum(z[k])
+            handles_in_conversations += np.count_nonzero(z[k])
 
-    number_handles = len(all_handles)
-    total_number_handles += number_handles
+            print(max(z[k]), sum(z[k]), np.count_nonzero(z[k]))
 
-    number_conversations = len(all_rows)
-    total_number_conversations += number_conversations
+        total_number_tweets += account_number_tweets
+        total_number_handles_in_conversation += handles_in_conversations
 
-    max_3_single_tweets = sorted(list(single_tweet_set), reverse=True)[:3]
+        number_handles = len(all_handles)
+        total_number_handles += number_handles
 
-    # remove 0 and 1 values if they exist
-    try:
-        max_3_single_tweets.remove(0)
-        max_3_single_tweets.remove(1)
+        number_conversations = len(all_rows)
+        total_number_conversations += number_conversations
 
-    except ValueError:
-        pass
+        max_3_single_tweets = sorted(list(single_tweet_set), reverse=True)[:3]
 
-    k_max[current_handle['handle']]['max-values'] = {}
-    for max_value in max_3_single_tweets:
-        k_max[current_handle['handle']]['max-values'][max_value] = set()
+        # remove 0 and 1 values if they exist
+        try:
+            max_3_single_tweets.remove(0)
+            max_3_single_tweets.remove(1)
 
-    for max_value in max_3_single_tweets:
-        for k in range(len(z)):
-            for i in range(len(z[k])):
-                if z[k][i] == max_value:
-                    k_max[current_handle['handle']]['max-values'][max_value].add(list(all_handles)[i])
+        except ValueError:
+            pass
 
-    k_max[current_handle['handle']]['handle-count'] = number_handles
-    k_max[current_handle['handle']]['conversation-count'] = number_conversations
-    k_max[current_handle['handle']]['ave-number-tweets'] = account_number_tweets / number_handles
-    k_max[current_handle['handle']]['ave-conversation-tweets'] = account_number_tweets / number_conversations
-    k_max[current_handle['handle']]['ave-conversation-handle'] = handles_in_conversations / number_conversations
+        k_max[current_handle['handle']]['max-values'] = {}
+        for max_value in max_3_single_tweets:
+            k_max[current_handle['handle']]['max-values'][max_value] = set()
 
-    print('Number of people in conversation:', number_handles)
-    print('Number of conversations:', number_conversations)
-    print('Hndl max 3 # Tweets in_Conv: {}, Tweets-in-Conv: {}, Number Handle in Convers: {}'.
-          format(max_3_single_tweets, max_tweets_in_conversation, max_handles_in_conversation))
+        for max_value in max_3_single_tweets:
+            for k in range(len(z)):
+                for i in range(len(z[k])):
+                    if z[k][i] == max_value:
+                        k_max[current_handle['handle']]['max-values'][max_value].add(list(all_handles)[i])
 
-    print('Ave Handl Tweets Conv: {:.2f}, Ave Tweets in Conv: {:.2f}'.format(account_number_tweets / number_handles,
-                                                                             account_number_tweets / number_conversations))
-    print('Ave Number Handles in Conv: {:.2f}'.format(handles_in_conversations / number_conversations))
+        k_max[current_handle['handle']]['handle-count'] = number_handles
+        k_max[current_handle['handle']]['conversation-count'] = number_conversations
+        k_max[current_handle['handle']]['ave-number-tweets'] = account_number_tweets / number_handles
+        k_max[current_handle['handle']]['ave-conversation-tweets'] = account_number_tweets / number_conversations
+        k_max[current_handle['handle']]['ave-conversation-handle'] = handles_in_conversations / number_conversations
 
-    z_t = np.transpose(z)
+        print('Number of people in conversation:', number_handles)
+        print('Number of conversations:', number_conversations)
+        print('Hndl max 3 # Tweets in_Conv: {}, Tweets-in-Conv: {}, Number Handle in Convers: {}'.
+              format(max_3_single_tweets, max_tweets_in_conversation, max_handles_in_conversation))
 
-    max_tweets_across_conversations = 0
-    appearance_across_conversations = 0
-    max_appearance_across_conversations = 0
+        print('Ave Handl Tweets Conv: {:.2f}, Ave Tweets in Conv: {:.2f}'.format(account_number_tweets / number_handles,
+                                                                                 account_number_tweets / number_conversations))
+        print('Ave Number Handles in Conv: {:.2f}'.format(handles_in_conversations / number_conversations))
 
-    for k in range(len(z_t)):
-        if max_tweets_across_conversations < sum(z_t[k]):
-            max_tweets_across_conversations = sum(z_t[k])
-            k_max[current_handle['handle']]['tweets-across-conversation-count'] = max_tweets_across_conversations
-            k_max[current_handle['handle']]['tweets-across-conversation-handles'] = set([list(all_handles)[k]])
-        elif max_tweets_across_conversations == sum(z_t[k]):
-            k_max[current_handle['handle']]['tweets-across-conversation-handles'].add(list(all_handles)[k])
+        z_t = np.transpose(z)
 
-        if max_appearance_across_conversations < np.count_nonzero(z_t[k]):
-            max_appearance_across_conversations = np.count_nonzero(z_t[k])
-            k_max[current_handle['handle']]['appearance-across-conversation-count'] = max_appearance_across_conversations
-            k_max[current_handle['handle']]['appearance-across-conversation-handles'] = set([list(all_handles)[k]])
+        max_tweets_across_conversations = 0
+        appearance_across_conversations = 0
+        max_appearance_across_conversations = 0
 
-        elif max_appearance_across_conversations == np.count_nonzero(z_t[k]):
-            k_max[current_handle['handle']]['appearance-across-conversation-handles'].add(list(all_handles)[k])
+        for k in range(len(z_t)):
+            if max_tweets_across_conversations < sum(z_t[k]):
+                max_tweets_across_conversations = sum(z_t[k])
+                k_max[current_handle['handle']]['tweets-across-conversation-count'] = max_tweets_across_conversations
+                k_max[current_handle['handle']]['tweets-across-conversation-handles'] = set([list(all_handles)[k]])
+            elif max_tweets_across_conversations == sum(z_t[k]):
+                k_max[current_handle['handle']]['tweets-across-conversation-handles'].add(list(all_handles)[k])
 
-        appearance_across_conversations += np.count_nonzero(z_t[k])
-    total_appearance_across_conversation += appearance_across_conversations
+            if max_appearance_across_conversations < np.count_nonzero(z_t[k]):
+                max_appearance_across_conversations = np.count_nonzero(z_t[k])
+                k_max[current_handle['handle']]['appearance-across-conversation-count'] = max_appearance_across_conversations
+                k_max[current_handle['handle']]['appearance-across-conversation-handles'] = set([list(all_handles)[k]])
 
-    k_max[current_handle['handle']]['ave-handle-appearance-across-conversation'] = appearance_across_conversations / number_handles
+            elif max_appearance_across_conversations == np.count_nonzero(z_t[k]):
+                k_max[current_handle['handle']]['appearance-across-conversation-handles'].add(list(all_handles)[k])
 
-    print('Handle-Tweets Across Conv: {}, '.format(max_tweets_across_conversations) +
-          'Handle\'s Appearance Across Conversation: {}'.format(max_appearance_across_conversations))
-    print('Ave. Appearance Across Conversations: {:.2f}'.format(appearance_across_conversations / number_handles))
-    print('List of max number of tweets:', max_3_single_tweets)
+            appearance_across_conversations += np.count_nonzero(z_t[k])
+        total_appearance_across_conversation += appearance_across_conversations
+
+        k_max[current_handle['handle']]['ave-handle-appearance-across-conversation'] = appearance_across_conversations / number_handles
+
+        print('Handle-Tweets Across Conv: {}, '.format(max_tweets_across_conversations) +
+              'Handle\'s Appearance Across Conversation: {}'.format(max_appearance_across_conversations))
+        print('Ave. Appearance Across Conversations: {:.2f}'.format(appearance_across_conversations / number_handles))
+        print('List of max number of tweets:', max_3_single_tweets)
 
 print(k_max)
 
