@@ -30,6 +30,9 @@ class Conversation:
                     if loaded_conversation:
                         conversation_idx = next(iter(loaded_conversation.values()))['data-conversation-id']
                         conversation_block['data-conversation-id'] = conversation_idx
+                    else:
+                        print(loaded_conversation)
+                        exit(-22)
 
                     # separate root from response conversations
                     for _idx in loaded_conversation:
@@ -51,7 +54,7 @@ class Conversation:
                             conversation_block['tweet-text'] = loaded_conversation[_idx]['tweet-text']
 
                         else:
-                            if 'data-screen-name' in loaded_conversation[_idx]:
+                            # if 'data-screen-name' in loaded_conversation[_idx]:
                                 conversation_block['interactions'].append({
                                     'data-tweet-id': loaded_conversation[_idx]['data-tweet-id'],
                                     'data-screen-name': loaded_conversation[_idx]['data-screen-name'],
@@ -73,6 +76,7 @@ class Conversation:
                                 'interactions': conversation_block['interactions']
                             }
                         }
+
         return
 
     def handle_conversations_id(self, handle):
