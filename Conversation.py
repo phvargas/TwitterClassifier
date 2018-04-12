@@ -7,6 +7,8 @@ class Conversation:
     def __init__(self, conversation_filename):
         self.conversations = {}
 
+        self.counter = 0
+
         if os.path.isfile(conversation_filename):
             self.load_conversations(conversation_filename)
         else:
@@ -19,6 +21,7 @@ class Conversation:
         except ValueError:
             self.max_number_conversations = []
 
+
     def load_conversations(self, filename):
         with open(filename, "r", encoding='iso-8859-1') as fs:
             for record in fs:
@@ -27,37 +30,28 @@ class Conversation:
                     conversation_block = {'interactions': []}
 
                     # gets the Twitter Conversation-ID from the thread
-                    if loaded_conversation:
-                        conversation_idx = next(iter(loaded_conversation.values()))['data-conversation-id']
+                    for _idx in loaded_conversation:
+                        conversation_idx = loaded_conversation[_idx]['data-conversation-id']
                         conversation_block['data-conversation-id'] = conversation_idx
+                        break
 
                     # separate root from response conversations
                     for _idx in loaded_conversation:
                         # print('{}: {}'.format(_idx, loaded_conversation[_idx]))
 
-                        is_original_tweet = False   # flag to find root conversation
-
-                        for key in loaded_conversation[_idx]:
-                            # print('\t{}: {}'.format(key, loaded_conversation[_idx][key]))
-
-                            # check if conversation-id is the root
-                            if key == 'data-conversation-id' and loaded_conversation[_idx][key] == _idx:
-                                is_original_tweet = True
-                                break
-
-                        if is_original_tweet:
-                            conversation_block['data-screen-name'] = loaded_conversation[_idx]['data-screen-name'].lower()
+                        # check if conversation-id is the root
+                        if loaded_conversation[_idx]['data-conversation-id'] == _idx:
+                            conversation_block['data-screen-name'] = loaded_conversation[_idx][
+                                'data-screen-name'].lower()
                             conversation_block['tweet-time'] = loaded_conversation[_idx]['tweet-time']
                             conversation_block['tweet-text'] = loaded_conversation[_idx]['tweet-text']
-
                         else:
-                            # if 'data-screen-name' in loaded_conversation[_idx]:
-                                conversation_block['interactions'].append({
-                                    'data-tweet-id': loaded_conversation[_idx]['data-tweet-id'],
-                                    'data-screen-name': loaded_conversation[_idx]['data-screen-name'],
-                                    'tweet-time': loaded_conversation[_idx]['tweet-time'],
-                                    'tweet-text': loaded_conversation[_idx]['tweet-text']
-                                })
+                            conversation_block['interactions'].append({
+                                'data-tweet-id': loaded_conversation[_idx]['data-tweet-id'],
+                                'data-screen-name': loaded_conversation[_idx]['data-screen-name'].lower(),
+                                'tweet-time': loaded_conversation[_idx]['tweet-time'],
+                                'tweet-text': loaded_conversation[_idx]['tweet-text']
+                            })
 
                     if 'data-screen-name' in conversation_block and conversation_block['data-screen-name'] in self.conversations:
                         self.conversations[conversation_block['data-screen-name']][conversation_idx] = {
@@ -73,6 +67,8 @@ class Conversation:
                                 'interactions': conversation_block['interactions']
                             }
                         }
+                    else:
+                        self.counter += 1
 
         return
 
