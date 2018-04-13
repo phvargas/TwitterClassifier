@@ -950,6 +950,18 @@ def get_values(**kwargs):
                 "stance": "unknown"
             },
             {
+                "birth_year": "",
+                "followers": "48278",
+                "handle": "KHayhoe",
+                "id": "",
+                "job": "Climate Scientist",
+                "join_date": "4/1/2009",
+                "name": "Katharine Hayhoe",
+                "race": "white",
+                "sex": "female",
+                "stance": "liberal"
+            },
+            {
                 "birth_year": "1964",
                 "followers": "278892",
                 "handle": "kilmeade",
