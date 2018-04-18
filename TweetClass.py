@@ -93,16 +93,12 @@ class TweetClass:
                 have_to_wait = False
             except twitter.error.TwitterError as e:
                 print(screen_name, 'message:', e.message)
-                if 'code' in e.message[0]:
-                    print(e.message[0]['code'])
-                else:
-                    print('no code in msg')
 
                 if e.message == 'Not authorized.' or 'Unknown error: ' in e.message or e.message[0]['code'] == 34:
                     print('Account deleted or not authorized... Moving on ... ')
                     return []
 
-                print('We have to wait 15 mins.')
+                print('Waiting 15 mins.')
                 timeit.sleep(61 * 15)
 
         return tweet_block
