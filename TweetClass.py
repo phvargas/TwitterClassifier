@@ -7,6 +7,7 @@ import pickle
 import gzip
 import json
 from twitter_apps.TwitterFunctions import TObject
+from Utilities.ProgressBar import display_progress_bar
 
 
 class TweetClass:
@@ -72,7 +73,7 @@ class TweetClass:
 
             for tweet in new_tweets:
                 handle_tweets.append(tweet)
-            print('{:,} tweets...'.format(len(handle_tweets)))
+            display_progress_bar(20, len(handle_tweets)/max_count)
 
             # update the id of the oldest tweet less one
             if len(new_tweets) > 0:
