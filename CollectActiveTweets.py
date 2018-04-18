@@ -132,7 +132,7 @@ def main(**kwarg):
 
             else:
                 data = tweet.get_tweets(handle)
-                print('Capture {:,} tweets for {}'.format(len(data), handle))
+                print('Captured {:,} tweets for {}'.format(len(data), handle))
                 tweet.save(handle, data)
 
 
@@ -143,7 +143,7 @@ if __name__ == '__main__':
            The uploaded object will contain the handles that interacted in the conversations. This is a MANDATORY
            parameter.
 
-    :tweet_path: path of folder where tweets are stored. This is a MANDATORY parameter.
+    :path_tweet: path of folder where tweets are stored. This is a MANDATORY parameter.
 
     :del_path: this parameter is the folder where the discovered deleted and suspended accounts are stored.
                 A file containing a list of handles will be save in the folder with the following format:
