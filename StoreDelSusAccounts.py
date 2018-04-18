@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from Conversation import Conversation
 from multiprocessing import Process
 from time import strftime
