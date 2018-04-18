@@ -28,7 +28,7 @@ month = {'Jan': '01', 'Feb': '02', 'Mar': '03', 'Apr': '04', 'May': '05', 'Jun':
 
 print('\nUploading conversations ...')
 #observed = Conversation('/data/harassment/verifiedUserDataset/tweetConvo.dat')
-observed = Conversation('data/verifiedUserDataset/Conversation_20180407a.dat')
+observed = Conversation('data/verifiedUserDataset/Conversation_20180407_updated.dat')
 print('Sorting UserNames interacting in conversations ...')
 nosey_handles = sorted(observed.all_conversation_elements_set())
 print('Found {:,} unique actors ...'.format(len(nosey_handles)))
